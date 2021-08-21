@@ -1,34 +1,42 @@
+import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { supabase } from "../utils/supabaseClient";
+import { GetProfileResponse } from "../pages/api/getProfile";
+import { Session } from "../session/session";
 
-export default function Account({ session }) {
-  const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState(null);
-  const [password, setPassword] = useState<string>(null);
-  const [avatar_url, setAvatarUrl] = useState(null);
+interface AccountProps {
+  session: Session;
+}
+
+interface AccountDetails extends User {
+  username: string;
+  avatarUrl?: string;
+}
+
+export function Account({ session }: AccountProps) {
+  const [profile, setProfile] = useState<AccountDetails>(null);
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     getProfile();
-  }, [session]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  console.log(session.accessToken);
   async function getProfile() {
     try {
-      setLoading(true);
-      const user = supabase.auth.user();
+      setLoading(true); 
+      const response: GetProfileResponse = await fetch("/api/getProfile", {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": session.accessToken,
+        },
+      }).then((res) => res.json());
 
-      let { data, error, status } = await supabase
-        .from("profiles")
-        .select(`username, avatar_url`)
-        .eq("id", user.id)
-        .single();
-
-      if (error && status !== 406) {
-        throw error;
-      }
-
-      if (data) {
-        setUsername(data.username);
-        setAvatarUrl(data.avatar_url);
+      if (response.success) {
+        setProfile(response);
+      } else if (response.success === false) { // weird type inference thing, !response.success was not enough here
+        alert(`Unable to log in: ${response.error}`);
       }
     } catch (error) {
       alert(error.message);
@@ -38,90 +46,55 @@ export default function Account({ session }) {
   }
 
   async function updateProfile({ username, avatar_url }) {
-    try {
-      setLoading(true);
-      const user = supabase.auth.user();
+    // try {
+    //   setLoading(true);
+    //   const user = supabase.auth.user();
 
-      const updates = {
-        id: user.id,
-        username,
-        avatar_url,
-        updated_at: new Date(),
-      };
+    //   const updates = {
+    //     id: user.id,
+    //     username,
+    //     avatar_url,
+    //     updated_at: new Date(),
+    //   };
 
-      let { error } = await supabase.from("profiles").upsert(updates, {
-        returning: "minimal", // Don't return the value after inserting
-      });
+    //   let { error } = await supabase.from("profiles").upsert(updates, {
+    //     returning: "minimal", // Don't return the value after inserting
+    //   });
 
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
+    //   if (error) {
+    //     throw error;
+    //   }
+    // } catch (error) {
+    //   alert(error.message);
+    // } finally {
+    //   setLoading(false);
+    // }
   }
 
-  function updatePassword() {
-    supabase.auth.update({
-      password,
-    }).catch(error => console.log(error)).then(() => console.log("it worked"));
-  }
-
+  // function updatePassword() {
+  //   supabase.auth.update({
+  //     password,
+  //   }).catch(error => console.log(error)).then(() => console.log("it worked"));
+  // }
   return (
     <div className="form-widget">
-      <div>
-        <label htmlFor="email">Email</label>
-        <input id="email" type="text" value={session.user.email} disabled />
-      </div>
-      <div>
-        <label htmlFor="username">Name</label>
-        <input
-          id="username"
-          type="text"
-          value={username || ""}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="password">Password</label>
-        <input
-          id="username"
-          type="text"
-          value={password || ""}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div>
-        <button
-          className="button block primary"
-          onClick={() => updatePassword()}
-          disabled={loading}
-        >
-          {loading ? "Loading ..." : "Reset Password"}
-        </button>
-      </div>
-
-      <div>
-        <button
-          className="button block primary"
-          onClick={() => updateProfile({ username, avatar_url })}
-          disabled={loading}
-        >
-          {loading ? "Loading ..." : "Update"}
-        </button>
-      </div>
-
-      <div>
-        <button
-          className="button block"
-          onClick={() => supabase.auth.signOut()}
-        >
-          Sign Out
-        </button>
-      </div>
+      {isLoading && (<p>Loading...</p>)}
+      {profile != null && (
+        <>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input id="email" type="text" value={session.user.email} disabled />
+          </div>
+          <div>
+            <label htmlFor="username">Name</label>
+            <input
+              id="username"
+              type="text"
+              value={profile.username}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

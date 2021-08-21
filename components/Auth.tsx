@@ -1,24 +1,35 @@
 import { useState } from "react";
-import login from "../pages/api/login";
-import { supabase } from "../utils/supabaseClient";
+import { LoginResponse } from "../pages/api/login";
+import { useSessionUser } from "../session/useSessionUser";
 
-export default function Auth() {
+export function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login: updateLocalSession } = useSessionUser();
 
   const handleLogin = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await fetch("/api/login", {
+      const { error, access_token, refresh_token, user }: LoginResponse = await fetch("/api/login", {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       }).then((res) => res.json());
-      if (error) throw error;
-      alert("Check your email for the login link!");
+      if (error) {
+        alert(`Unable to log in: ${error}`);
+      } else  {
+        updateLocalSession({
+          accessToken: access_token,
+          refreshToken: refresh_token,
+          user: { 
+            email: user.email!,
+          },
+        });
+        alert("You are now logged in!");
+      }
     } catch (error) {
       alert(error.error_description || error.message);
     } finally {
@@ -29,7 +40,7 @@ export default function Auth() {
   return (
     <div className="row flex flex-center">
       <div className="col-6 form-widget">
-        <h1 className="header">Supabase + Next.js</h1>
+        <h1 className="header">Login to Shark Reporter</h1>
         <p className="description">
           Sign in via magic link with your email below
         </p>
@@ -60,7 +71,7 @@ export default function Auth() {
             className="button block"
             disabled={loading}
           >
-            <span>{loading ? "Loading" : "Send magic link"}</span>
+            <span>{loading ? "Loading" : "Login"}</span>
           </button>
         </div>
       </div>
