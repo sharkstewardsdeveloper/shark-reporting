@@ -1,4 +1,5 @@
 import { useState } from "react";
+import login from "../pages/api/login";
 import { supabase } from "../utils/supabaseClient";
 
 export default function Auth() {
@@ -8,7 +9,13 @@ export default function Auth() {
   const handleLogin = async (email) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signIn({ email });
+      const { error } = await fetch("/api/login", {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      }).then((res) => res.json());
       if (error) throw error;
       alert("Check your email for the login link!");
     } catch (error) {
