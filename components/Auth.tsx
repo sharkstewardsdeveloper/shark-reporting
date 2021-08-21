@@ -5,8 +5,9 @@ import { supabase } from "../utils/supabaseClient";
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = async (email) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
       setLoading(true);
       const { error } = await fetch("/api/login", {
@@ -14,7 +15,7 @@ export default function Auth() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       }).then((res) => res.json());
       if (error) throw error;
       alert("Check your email for the login link!");
@@ -42,10 +43,19 @@ export default function Auth() {
           />
         </div>
         <div>
+          <input
+            className="inputField"
+            type="email"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div>
           <button
             onClick={(e) => {
               e.preventDefault();
-              handleLogin(email);
+              handleLogin(email, password);
             }}
             className="button block"
             disabled={loading}

@@ -4,6 +4,7 @@ import { supabase } from "../utils/supabaseClient";
 export default function Account({ session }) {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState(null);
+  const [password, setPassword] = useState<string>(null);
   const [avatar_url, setAvatarUrl] = useState(null);
 
   useEffect(() => {
@@ -62,6 +63,12 @@ export default function Account({ session }) {
     }
   }
 
+  function updatePassword() {
+    supabase.auth.update({
+      password,
+    }).catch(error => console.log(error)).then(() => console.log("it worked"));
+  }
+
   return (
     <div className="form-widget">
       <div>
@@ -76,6 +83,25 @@ export default function Account({ session }) {
           value={username || ""}
           onChange={(e) => setUsername(e.target.value)}
         />
+      </div>
+
+      <div>
+        <label htmlFor="password">Password</label>
+        <input
+          id="username"
+          type="text"
+          value={password || ""}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <div>
+        <button
+          className="button block primary"
+          onClick={() => updatePassword()}
+          disabled={loading}
+        >
+          {loading ? "Loading ..." : "Reset Password"}
+        </button>
       </div>
 
       <div>
