@@ -18,15 +18,11 @@ function Home() {
     <main>
       <AppHeader />
       <div className="container" style={{ padding: "50px 0 100px 0" }}>
-        {!session ? (
-          <Auth />
-        ) : (
-          <Account session={session} />
-        )}
+        {!session ? <Auth /> : <Account session={session} />}
       </div>
       <AppFooter />
     </main>
-  )
+  );
 }
 
 function AppHeader() {
@@ -34,7 +30,11 @@ function AppHeader() {
   return (
     <header>
       <h1>Shark Reporting</h1>
-      {session == null ? <button>Login</button> : <button onClick={logout}>Logout</button>}
+      {session == null ? (
+        <button>Login</button>
+      ) : (
+        <button onClick={logout}>Logout</button>
+      )}
     </header>
   );
 }

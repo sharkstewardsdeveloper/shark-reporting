@@ -18,24 +18,25 @@ export function Account({ session }: AccountProps) {
 
   useEffect(() => {
     getProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log(session.accessToken);
   async function getProfile() {
     try {
-      setLoading(true); 
+      setLoading(true);
       const response: GetProfileResponse = await fetch("/api/getProfile", {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
-          "Authorization": session.accessToken,
+          Authorization: session.accessToken,
         },
       }).then((res) => res.json());
 
       if (response.success) {
         setProfile(response);
-      } else if (response.success === false) { // weird type inference thing, !response.success was not enough here
+      } else if (response.success === false) {
+        // weird type inference thing, !response.success was not enough here
         alert(`Unable to log in: ${response.error}`);
       }
     } catch (error) {
@@ -49,18 +50,15 @@ export function Account({ session }: AccountProps) {
     // try {
     //   setLoading(true);
     //   const user = supabase.auth.user();
-
     //   const updates = {
     //     id: user.id,
     //     username,
     //     avatar_url,
     //     updated_at: new Date(),
     //   };
-
     //   let { error } = await supabase.from("profiles").upsert(updates, {
     //     returning: "minimal", // Don't return the value after inserting
     //   });
-
     //   if (error) {
     //     throw error;
     //   }
@@ -78,7 +76,7 @@ export function Account({ session }: AccountProps) {
   // }
   return (
     <div className="form-widget">
-      {isLoading && (<p>Loading...</p>)}
+      {isLoading && <p>Loading...</p>}
       {profile != null && (
         <>
           <div>
@@ -87,11 +85,7 @@ export function Account({ session }: AccountProps) {
           </div>
           <div>
             <label htmlFor="username">Name</label>
-            <input
-              id="username"
-              type="text"
-              value={profile.username}
-            />
+            <input id="username" type="text" value={profile.username} />
           </div>
         </>
       )}

@@ -10,9 +10,11 @@ export interface LoginResponse {
 }
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   if (email == null || password == null) {
-    res.status(400).json({ error: "You must provide both your email and password." });
+    res
+      .status(400)
+      .json({ error: "You must provide both your email and password." });
     return;
   }
 
@@ -25,6 +27,8 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
     console.log(data);
     const { access_token, refresh_token } = data.session;
     const user = data.user;
-    res.status(200).json({ access_token, refresh_token, user } as LoginResponse);
+    res
+      .status(200)
+      .json({ access_token, refresh_token, user } as LoginResponse);
   }
 }

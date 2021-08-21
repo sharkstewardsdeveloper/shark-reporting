@@ -11,20 +11,21 @@ export function Auth() {
   const handleLogin = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error, access_token, refresh_token, user }: LoginResponse = await fetch("/api/login", {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      }).then((res) => res.json());
+      const { error, access_token, refresh_token, user }: LoginResponse =
+        await fetch("/api/login", {
+          method: "POST", // or 'PUT'
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }).then((res) => res.json());
       if (error) {
         alert(`Unable to log in: ${error}`);
-      } else  {
+      } else {
         updateLocalSession({
           accessToken: access_token,
           refreshToken: refresh_token,
-          user: { 
+          user: {
             email: user.email!,
           },
         });
