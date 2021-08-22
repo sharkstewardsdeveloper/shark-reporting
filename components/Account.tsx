@@ -21,7 +21,6 @@ export function Account({ session }: AccountProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.log(session.accessToken);
   async function getProfile() {
     try {
       setLoading(true);
@@ -75,7 +74,7 @@ export function Account({ session }: AccountProps) {
   //   }).catch(error => console.log(error)).then(() => console.log("it worked"));
   // }
   return (
-    <div className="form-widget">
+    <div>
       {isLoading && <p>Loading...</p>}
       {profile != null && (
         <>

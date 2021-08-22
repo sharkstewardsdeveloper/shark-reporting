@@ -6,7 +6,7 @@ export interface LoginResponse {
   access_token?: string;
   refresh_token?: string;
   user?: User;
-  error?: Error;
+  error?: string;
 }
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
@@ -21,7 +21,7 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
   const data = await supabase.auth.signIn({ email, password });
   const error = data.error;
   if (error) {
-    res.status(400).json({ error } as LoginResponse);
+    res.status(401).json({ error: error.message } as LoginResponse);
     return;
   } else {
     console.log(data);
