@@ -71,8 +71,8 @@ function AppHeader() {
 
 function AppFooter() {
   return (
-    <Flex as="footer" backgroundColor="cyan.900">
-      <Text color="white">Where are the Sharks? by Shark Stewards</Text>
+    <Flex as="footer" backgroundColor="brand.primary">
+      <Text m={3} color="brand.white">Where are the Sharks? by Shark Stewards</Text>
     </Flex>
   );
 }
