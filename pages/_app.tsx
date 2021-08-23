@@ -45,10 +45,10 @@ function AppHeader() {
         wrap="wrap"
         width="100%"
         backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
-        color={["brand.white", "brand.white", "brand.white"]}
+        
       >
         <Flex 
-          w="50%" 
+          w={["60%", "40%", "40%"]} 
           align="center"
           justify="flex-start"
         >
@@ -59,16 +59,16 @@ function AppHeader() {
             src="/ssLogo.png"
             alt="shark stewards logo"
           />
-          <Heading m={1}>Shark Finder</Heading>
+          <Heading color="brand.white" m={1}>Shark Reporter</Heading>
         </Flex>
        
         <Menu >
-          <MenuButton bgColor="brand.secondary" m={3} as={Button} isActive={false}>
+          <MenuButton colorScheme="teal" variant="solid" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
-          <MenuList bgColor="brand.secondary">
-            {session == null && <MenuItem _focus={{"focus": "brand.secondaryLight"}} onClick={onOpen}>Login</MenuItem>}
-            {session != null && <MenuItem _focus={{"focus": "brand.secondaryLight"}}onClick={logout}>Logout</MenuItem>}
+          <MenuList colorScheme="teal">
+            {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
+            {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
           </MenuList>
         </Menu>
       </Flex>
