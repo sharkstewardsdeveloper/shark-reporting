@@ -1,11 +1,13 @@
 import { Authentication } from "../components/Authentication";
 import {
   Button,
+  Box,
   ChakraProvider,
   Flex,
   Grid,
   Heading,
   Menu,
+  Image,
   MenuButton,
   MenuItem,
   MenuList,
@@ -13,13 +15,14 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
+import { theme } from "../styles/theme"
 import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <Authentication>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <Grid templateRows="min-content 1fr auto" height="100vh">
           <AppHeader />
           <Component {...pageProps} />
@@ -41,15 +44,29 @@ function AppHeader() {
         justify="space-between"
         wrap="wrap"
         width="100%"
-        backgroundColor={["cyan.500", "cyan.500", "transparent"]}
-        color={["white", "white", "cyan.500"]}
+        backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
+        
       >
-        <Heading>Where are the Sharks?</Heading>
-        <Menu>
-          <MenuButton as={Button} isActive={false}>
+        <Flex 
+          w={["60%", "40%", "40%"]} 
+          align="center"
+          justify="flex-start"
+        >
+          <Image
+            m={1}
+            boxSize="80px"
+            objectFit="cover"
+            src="/ssLogo.png"
+            alt="shark stewards logo"
+          />
+          <Heading color="brand.white" m={1}>Shark Reporter</Heading>
+        </Flex>
+       
+        <Menu >
+          <MenuButton colorScheme="teal" variant="solid" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
-          <MenuList>
+          <MenuList colorScheme="teal">
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
             {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
           </MenuList>
@@ -62,8 +79,8 @@ function AppHeader() {
 
 function AppFooter() {
   return (
-    <Flex as="footer" backgroundColor="cyan.900">
-      <Text color="white">Where are the Sharks? by Shark Stewards</Text>
+    <Flex as="footer" backgroundColor="brand.primary">
+      <Text m={3} color="brand.white">Where are the Sharks? by Shark Stewards</Text>
     </Flex>
   );
 }
