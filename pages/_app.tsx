@@ -6,6 +6,7 @@ import {
   Grid,
   Heading,
   Menu,
+  Image,
   MenuButton,
   MenuItem,
   MenuList,
@@ -13,13 +14,14 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
+import { theme } from "../styles/theme"
 import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <Authentication>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <Grid templateRows="min-content 1fr auto" height="100vh">
           <AppHeader />
           <Component {...pageProps} />
@@ -41,15 +43,22 @@ function AppHeader() {
         justify="space-between"
         wrap="wrap"
         width="100%"
-        backgroundColor={["cyan.500", "cyan.500", "transparent"]}
-        color={["white", "white", "cyan.500"]}
+        backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
+        color={["white", "white", "white"]}
       >
-        <Heading>Where are the Sharks?</Heading>
-        <Menu>
-          <MenuButton as={Button} isActive={false}>
+        <Image
+          boxSize="100px"
+          objectFit="cover"
+          src="/ssLogo.png"
+          alt="Segun Adebayo"
+        />
+        
+        <Heading m={3}>Shark Finder</Heading>
+        <Menu >
+          <MenuButton bgColor="brand.secondary" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
-          <MenuList>
+          <MenuList bgColor="brand.secondary">
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
             {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
           </MenuList>
