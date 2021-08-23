@@ -59,8 +59,8 @@ function AppHeader() {
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
           <MenuList bgColor="brand.secondary">
-            {session == null && <MenuItem _focus="brand.secondaryLight" onClick={onOpen}>Login</MenuItem>}
-            {session != null && <MenuItem _focus="brand.secondaryLight" onClick={logout}>Logout</MenuItem>}
+            {session == null && <MenuItem _focus={{"focus": "brand.secondaryLight"}} onClick={onOpen}>Login</MenuItem>}
+            {session != null && <MenuItem _focus={{"focus": "brand.secondaryLight"}}onClick={logout}>Logout</MenuItem>}
           </MenuList>
         </Menu>
       </Flex>
