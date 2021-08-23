@@ -71,9 +71,9 @@ export function AuthModal({ onClose }: AuthModalProps) {
   };
 
   return (
-    <Modal  isOpen={true} onClose={onClose}>
+    <Modal isOpen={true} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent bgColor="brand.primaryLight" color="brand.white">
+      <ModalContent bgColor="brand.white" color="brand.primary">
         <ModalHeader>Login to Shark Reporter</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
