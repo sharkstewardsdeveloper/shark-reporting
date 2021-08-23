@@ -73,7 +73,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
   return (
     <Modal isOpen={true} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent bgColor="brand.secondary">
+      <ModalContent color="brand.white" bgColor="brand.secondary">
         <ModalHeader>Login to Shark Reporter</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -97,7 +97,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <InputRightElement width="4.5rem">
-                  <Button h="1.75rem" size="sm" onClick={handleShowPassword}>
+                  <Button bgColor="brand.primary" h="1.75rem" size="sm" onClick={handleShowPassword}>
                     {showPassword ? "Hide" : "Show"}
                   </Button>
                 </InputRightElement>
@@ -110,6 +110,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
               </Alert>
             )}
             <Button
+              bgColor="brand.primary"
               isLoading={loading}
               onClick={() => handleLogin(email, password)}
             >

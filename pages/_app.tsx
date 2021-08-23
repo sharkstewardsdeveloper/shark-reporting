@@ -44,13 +44,13 @@ function AppHeader() {
         wrap="wrap"
         width="100%"
         backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
-        color={["white", "white", "white"]}
+        color={["brand.white", "brand.white", "brand.white"]}
       >
         <Image
           boxSize="100px"
           objectFit="cover"
           src="/ssLogo.png"
-          alt="Segun Adebayo"
+          alt="shark stewards logo"
         />
         
         <Heading m={3}>Shark Finder</Heading>
@@ -59,8 +59,8 @@ function AppHeader() {
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
           <MenuList bgColor="brand.secondary">
-            {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
-            {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
+            {session == null && <MenuItem _focus="brand.secondaryLight" onClick={onOpen}>Login</MenuItem>}
+            {session != null && <MenuItem _focus="brand.secondaryLight" onClick={logout}>Logout</MenuItem>}
           </MenuList>
         </Menu>
       </Flex>
