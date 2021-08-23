@@ -1,6 +1,7 @@
 import { Authentication } from "../components/Authentication";
 import {
   Button,
+  Box,
   ChakraProvider,
   Flex,
   Grid,
@@ -46,15 +47,21 @@ function AppHeader() {
         backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
         color={["brand.white", "brand.white", "brand.white"]}
       >
-        <Image
-          m={1}
-          boxSize="100px"
-          objectFit="cover"
-          src="/ssLogo.png"
-          alt="shark stewards logo"
-        />
-        
-        <Heading m={1}>Shark Finder</Heading>
+        <Flex 
+          w="50%" 
+          align="center"
+          justify="flex-start"
+        >
+          <Image
+            m={1}
+            boxSize="80px"
+            objectFit="cover"
+            src="/ssLogo.png"
+            alt="shark stewards logo"
+          />
+          <Heading m={1}>Shark Finder</Heading>
+        </Flex>
+       
         <Menu >
           <MenuButton bgColor="brand.secondary" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
