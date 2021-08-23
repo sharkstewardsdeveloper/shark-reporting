@@ -47,13 +47,14 @@ function AppHeader() {
         color={["brand.white", "brand.white", "brand.white"]}
       >
         <Image
+          m={1}
           boxSize="100px"
           objectFit="cover"
           src="/ssLogo.png"
           alt="shark stewards logo"
         />
         
-        <Heading m={3}>Shark Finder</Heading>
+        <Heading m={1}>Shark Finder</Heading>
         <Menu >
           <MenuButton bgColor="brand.secondary" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
