@@ -1,4 +1,5 @@
 import { Authentication } from "../components/Authentication";
+import { AppFooter } from "../components/AppFooter";
 import Head from "next/head";
 import {
   Button,
@@ -14,6 +15,7 @@ import {
   MenuList,
   Text,
   useDisclosure,
+  MenuGroup,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
 import { theme } from "../styles/theme";
@@ -53,12 +55,16 @@ function AppHeader() {
         <Flex w={["60%", "40%", "40%"]} align="center" justify="flex-start">
           <Image
             m={1}
-            boxSize="80px"
+            boxSize={["42px", "64px", "88px"]}
             objectFit="cover"
             src="/ssLogo.png"
-            alt="shark stewards logo"
+            alt="Shark Stewards"
           />
-          <Heading color="brand.white" m={1}>
+          <Heading
+            color="brand.white"
+            m={1}
+            fontSize={["medium", "large", "3xl"]}
+          >
             Shark Reporter
           </Heading>
         </Flex>
@@ -75,21 +81,19 @@ function AppHeader() {
           </MenuButton>
           <MenuList colorScheme="teal">
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
-            {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
+            {session != null && (
+              <>
+                <MenuItem>My Sightings</MenuItem>
+                <MenuGroup>
+                  <MenuItem>Profile</MenuItem>
+                  <MenuItem onClick={logout}>Logout</MenuItem>
+                </MenuGroup>
+              </>
+            )}
           </MenuList>
         </Menu>
       </Flex>
       {isAuthModalOpen && <AuthModal onClose={onClose} />}
     </>
-  );
-}
-
-function AppFooter() {
-  return (
-    <Flex as="footer" backgroundColor="brand.primary">
-      <Text m={3} color="brand.white">
-        Where are the Sharks? by Shark Stewards
-      </Text>
-    </Flex>
   );
 }
