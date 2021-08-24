@@ -14,6 +14,7 @@ import {
   MenuList,
   Text,
   useDisclosure,
+  MenuGroup,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
 import { theme } from "../styles/theme";
@@ -79,7 +80,15 @@ function AppHeader() {
           </MenuButton>
           <MenuList colorScheme="teal">
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
-            {session != null && <MenuItem onClick={logout}>Logout</MenuItem>}
+            {session != null && (
+              <>
+                <MenuItem>My Sightings</MenuItem>
+                <MenuGroup>
+                  <MenuItem>Profile</MenuItem>
+                  <MenuItem onClick={logout}>Logout</MenuItem>
+                </MenuGroup>
+              </>
+            )}
           </MenuList>
         </Menu>
       </Flex>
