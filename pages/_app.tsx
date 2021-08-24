@@ -1,4 +1,5 @@
 import { Authentication } from "../components/Authentication";
+import Head from "next/head";
 import {
   Button,
   Box,
@@ -15,7 +16,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
-import { theme } from "../styles/theme"
+import { theme } from "../styles/theme";
 import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
 
@@ -23,6 +24,9 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <Authentication>
       <ChakraProvider theme={theme}>
+        <Head>
+          <title>Shark Reporting by Shark Stewards</title>
+        </Head>
         <Grid templateRows="min-content 1fr auto" height="100vh">
           <AppHeader />
           <Component {...pageProps} />
@@ -45,13 +49,8 @@ function AppHeader() {
         wrap="wrap"
         width="100%"
         backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
-        
       >
-        <Flex 
-          w={["60%", "40%", "40%"]} 
-          align="center"
-          justify="flex-start"
-        >
+        <Flex w={["60%", "40%", "40%"]} align="center" justify="flex-start">
           <Image
             m={1}
             boxSize="80px"
@@ -59,11 +58,19 @@ function AppHeader() {
             src="/ssLogo.png"
             alt="shark stewards logo"
           />
-          <Heading color="brand.white" m={1}>Shark Reporter</Heading>
+          <Heading color="brand.white" m={1}>
+            Shark Reporter
+          </Heading>
         </Flex>
-       
-        <Menu >
-          <MenuButton colorScheme="teal" variant="solid" m={3} as={Button} isActive={false}>
+
+        <Menu>
+          <MenuButton
+            colorScheme="teal"
+            variant="solid"
+            m={3}
+            as={Button}
+            isActive={false}
+          >
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
           <MenuList colorScheme="teal">
@@ -80,7 +87,9 @@ function AppHeader() {
 function AppFooter() {
   return (
     <Flex as="footer" backgroundColor="brand.primary">
-      <Text m={3} color="brand.white">Where are the Sharks? by Shark Stewards</Text>
+      <Text m={3} color="brand.white">
+        Where are the Sharks? by Shark Stewards
+      </Text>
     </Flex>
   );
 }
