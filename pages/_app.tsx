@@ -1,4 +1,5 @@
 import { Authentication } from "../components/Authentication";
+import { AppFooter } from "../components/AppFooter";
 import Head from "next/head";
 import {
   Button,
@@ -94,15 +95,5 @@ function AppHeader() {
       </Flex>
       {isAuthModalOpen && <AuthModal onClose={onClose} />}
     </>
-  );
-}
-
-function AppFooter() {
-  return (
-    <Flex as="footer" backgroundColor="brand.primary">
-      <Text m={3} color="brand.white">
-        Where are the Sharks? by Shark Stewards
-      </Text>
-    </Flex>
   );
 }
