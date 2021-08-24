@@ -56,7 +56,7 @@ const SocialButton = ({
 
 export function AppFooter() {
   return (
-    <Box bg="brand.secondary" color="brand.white" as="footer">
+    <Box bg="brand.primary" color="brand.white" as="footer">
       <Container as={Stack} maxW={"6xl"} py={10}>
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
           <Stack align={"flex-start"} as="section">
