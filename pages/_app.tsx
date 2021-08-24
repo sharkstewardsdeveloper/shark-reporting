@@ -53,12 +53,16 @@ function AppHeader() {
         <Flex w={["60%", "40%", "40%"]} align="center" justify="flex-start">
           <Image
             m={1}
-            boxSize="80px"
+            boxSize={["42px", "64px", "88px"]}
             objectFit="cover"
             src="/ssLogo.png"
-            alt="shark stewards logo"
+            alt="Shark Stewards"
           />
-          <Heading color="brand.white" m={1}>
+          <Heading
+            color="brand.white"
+            m={1}
+            fontSize={["medium", "large", "3xl"]}
+          >
             Shark Reporter
           </Heading>
         </Flex>
