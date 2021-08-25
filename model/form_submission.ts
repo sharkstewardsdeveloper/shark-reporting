@@ -53,3 +53,9 @@ export enum SharkType {
   /** Any other shark species not listed above. */
   other = "other",
 }
+
+/** An form submission that has not yet been validated or persisted. */
+export type FormResponse = Omit<
+  FormSubmission,
+  "id" | "user_id" | "created_at"
+>;
