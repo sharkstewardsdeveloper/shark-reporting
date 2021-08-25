@@ -18,7 +18,8 @@ import {
   import React, { useState } from "react";
   import { signUpResponse } from "../pages/api/signUp";
   import { useSessionUser } from "../session/useSessionUser";
-  
+  import { useRouter } from 'next/router'
+
   interface SignUpModalProps {
     onCloseSignUp: () => void;
   }
@@ -30,15 +31,16 @@ import {
     const [showPassword, setShowPassword] = useState(false);
     const { login: updateLocalSession } = useSessionUser();
     const [errorMessage, setErrorMessage] = useState<string>();
+    const router = useRouter()
 
     function handleShowPassword() {
       setShowPassword((value) => !value);
     }
-  
+
     const handleSignUp = async (email: string, password: string) => {
       try {
         setLoading(true);
-        const { error, access_token, refresh_token, user }: signUpResponse =
+        const { error, user }: signUpResponse =
           await fetch("/api/signUp", {
             method: "POST", // or 'PUT'
             headers: {
@@ -49,8 +51,9 @@ import {
         if (error) {
           setErrorMessage(`Unable to log in: ${error}`);
         } else {
-          alert("Check email")
+          console.log(user)
           onCloseSignUp();
+          router.push('/confirmSignUp')
         }
       } catch (error) {
         setErrorMessage(
@@ -116,6 +119,9 @@ import {
           </ModalBody>
         </ModalContent>
       </Modal>
+
     );
   }
+
+
 

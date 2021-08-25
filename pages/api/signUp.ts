@@ -3,8 +3,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../utils/supabaseClient";
 
 export interface signUpResponse {
-    access_token?: string;
-    refresh_token?: string;
     user?: User;
     error?: string;
   }
