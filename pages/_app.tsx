@@ -21,6 +21,7 @@ import "../styles/globals.css";
 import { theme } from "../styles/theme";
 import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
+import { SignUpModal } from "../components/SignUpModal";
 
 export default function MyApp({ Component, pageProps }) {
   return (
@@ -42,6 +43,8 @@ export default function MyApp({ Component, pageProps }) {
 function AppHeader() {
   const { session, logout } = useSessionUser();
   const { isOpen: isAuthModalOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isSignUpModalOpen, onOpen: onOpenSignUp, onClose: onCloseSignUp } = useDisclosure();
+  
   return (
     <>
       <Flex
@@ -81,6 +84,7 @@ function AppHeader() {
           </MenuButton>
           <MenuList colorScheme="teal">
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
+            {session == null && <MenuItem onClick={onOpenSignUp}>Sign Up</MenuItem>}
             {session != null && (
               <>
                 <MenuItem>My Sightings</MenuItem>
@@ -94,6 +98,7 @@ function AppHeader() {
         </Menu>
       </Flex>
       {isAuthModalOpen && <AuthModal onClose={onClose} />}
+      {isSignUpModalOpen && <SignUpModal onCloseSignUp={onCloseSignUp} />}
     </>
   );
 }
