@@ -110,7 +110,7 @@ import {
                 colorScheme="teal" 
                 variant="solid"
               >
-                Login
+                Sign up
               </Button>
             </VStack>
           </ModalBody>
