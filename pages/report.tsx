@@ -172,7 +172,7 @@ export default function Report() {
                     <Field name="wasReleased">
                       {({field, form}) => (
                         <FormControl colorScheme="teal" >
-                          <FormLabel mt={4} as="legend">Was the shark released?</FormLabel>
+                          <FormLabel mt={6} as="legend">Was the shark released?</FormLabel>
                               <HStack spacing="24px">
                                 <Radio {...field} name="wasReleased" value={true}>True</Radio>
                                 <Radio {...field} name="wasReleased" value={false}>False</Radio>
