@@ -3,7 +3,7 @@ import { AppFooter } from "../components/AppFooter";
 import Head from "next/head";
 import {
   Button,
-  Box,
+  Link,
   ChakraProvider,
   Flex,
   Grid,
@@ -56,13 +56,17 @@ function AppHeader() {
         backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
       >
         <Flex w={["60%", "40%", "40%"]} align="center" justify="flex-start">
+          <Link title="Home" href="/">
           <Image
             m={1}
             boxSize={["42px", "64px", "88px"]}
             objectFit="cover"
             src="/ssLogo.png"
             alt="Shark Stewards"
+            
           />
+          </Link>
+          
           <Heading
             color="brand.white"
             m={1}
@@ -70,6 +74,7 @@ function AppHeader() {
           >
             Shark Reporter
           </Heading>
+          
         </Flex>
 
         <Menu>
