@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Container,
-  Heading,
+  Alert,
+  AlertIcon,
   Box,
   Flex,
   Text,
@@ -17,10 +17,34 @@ import {
   FormLabel,
   FormErrorMessage,
 } from "@chakra-ui/react";
-
+import { useRouter } from 'next/router'
 import { Formik, Field, Form } from "formik";
 
 export default function Report() {
+  const [errorMessage, setErrorMessage] = useState<string>();
+  const router = useRouter()
+
+  const handleFormSubmit = async (values) => {
+    console.log(values)
+      const  data = await fetch("/api/postReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify( values ),
+      })
+      if (data.status === 400) {
+        setErrorMessage(`Error: Location Required`);
+        console.log(data)
+      } else if(data.status === 401){
+        setErrorMessage(`Server Error: ${JSON.stringify(data.status)}`);
+        console.log(data)
+      } else {
+        console.log(data)
+        router.push('/confirmReport')
+      }
+
+  }
 
   return (
     <Flex
@@ -39,11 +63,19 @@ export default function Report() {
       
         <VStack align="center" margin="auto" width="lg" height="100%">
           <Box m={2} p={3}>
+          {errorMessage != null && (
+              <Alert status="error">
+                <AlertIcon />
+                {errorMessage}
+              </Alert>
+            )}
             <Formik
                 initialValues={{ location: "" }}
                 onSubmit={(values, actions) => {
+                  console.log(values, actions)
                   setTimeout(() => {
-                    alert(JSON.stringify(values, null, 2))
+                    // alert(JSON.stringify(values, null, 2))
+                    handleFormSubmit(values)
                     actions.setSubmitting(false)
                   }, 1000)
               }}
