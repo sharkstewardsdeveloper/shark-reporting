@@ -74,7 +74,6 @@ export default function Report() {
                 onSubmit={(values, actions) => {
                   console.log(values, actions)
                   setTimeout(() => {
-                    // alert(JSON.stringify(values, null, 2))
                     handleFormSubmit(values)
                     actions.setSubmitting(false)
                   }, 1000)
