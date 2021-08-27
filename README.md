@@ -24,7 +24,7 @@ Application to help track Shark sightings across California in association with 
 This project is licensed under the MIT license.
   
 ## Contributing
-[codejonesw](https://github.com/codejonesw/). William Jones
+[codejonesw](https://github.com/codejonesw/). William Jones.
 [ronaldsmartin](https://github.com/ronaldsmartin). Ronald Martin.  
 [moonrise-tk](https://github.com/moonrise-tk/). Tanishq Kancharla.  
 
