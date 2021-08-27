@@ -6,16 +6,17 @@ import {
   Flex,
   Text,
   Button,
-  Stack,
   Input,
   Checkbox,
   Select,
-  Divider,
+  Radio,
+  HStack,
   Textarea,
   VStack,
   FormControl,
   FormLabel,
   FormErrorMessage,
+  FormHelperText
 } from "@chakra-ui/react";
 import { useRouter } from 'next/router'
 import { Formik, Field, Form } from "formik";
@@ -70,9 +71,9 @@ export default function Report() {
               </Alert>
             )}
             <Formik
-                initialValues={{ location: "" }}
+                initialValues={{ locationName: "" }}
                 onSubmit={(values, actions) => {
-                  console.log(values, actions)
+                  console.log(values)
                   setTimeout(() => {
                     handleFormSubmit(values)
                     actions.setSubmitting(false)
@@ -81,21 +82,30 @@ export default function Report() {
               >
               {(props) => (
                 <Form >
-                  <Field name="location">
+                  <Field name="authorName">
                     {({ field, form }) => (
-                      <FormControl >
-                        <FormLabel mb={2} htmlFor="location">Location</FormLabel>
-                        <Input {...field} id="location" placeholder="San Francisco" />
+                      <FormControl colorScheme="teal">
+                        <FormLabel mb={2} htmlFor="authorName">Author Name</FormLabel>
+                        <Input {...field} id="authorName" placeholder="Your Name" />
+                      </FormControl>
+                    )}
+                  </Field>
+
+                  <Field name="locationName">
+                    {({ field, form }) => (
+                      <FormControl colorScheme="teal">
+                        <FormLabel mb={2} mt={2} htmlFor="locationName">Location</FormLabel>
+                        <Input {...field} id="locationName" placeholder="San Francisco" />
                         {/* <FormErrorMessage>{form.errors.location}</FormErrorMessage> */}
                       </FormControl>
                     )}
                   </Field>
 
-                  <Field name="time">
+                  <Field name="sightingTime">
                     {({ field, form }) => (
-                      <FormControl >
-                        <FormLabel mb={2} mt={2} htmlFor="Time">Time of Sighting</FormLabel>
-                        <Select id="time" {...field} placeholder="Time of day">
+                      <FormControl colorScheme="teal">
+                        <FormLabel mb={2} mt={2} htmlFor="sightingTime">Time of Sighting</FormLabel>
+                        <Select id="sightingTime" {...field} placeholder="Time of day">
                           <option value="3:00am">3:00 AM</option>
                           <option value="4:00am">4:00 PM</option>
                           <option value="5:00am">5:00 AM</option>
@@ -135,20 +145,52 @@ export default function Report() {
                     )}
                   </Field>
                   
-                  <Field name="information">
+                  <Field name="description">
                     {({ field, form }) => (
                       <FormControl colorScheme="teal">
-                        <FormLabel mb={2} mt={2} htmlFor="information">Additional Information</FormLabel>
-                        <Textarea {...field} id="information" placeholder="Details..." />
+                        <FormLabel mb={2} mt={2} htmlFor="description">Description</FormLabel>
+                        <Textarea {...field} id="description" placeholder="Details..." />
+                        <FormHelperText>The more accurate our data the more of an impact we can make </FormHelperText>
                       </FormControl>
                     )}
                   </Field>
+                  
+                  <HStack>
+                    <Field name="wasCaught">
+                      {({field, form}) => (
+                        <FormControl colorScheme="teal" >
+                          <FormLabel mt={4} as="legend">Was the shark caught?</FormLabel>
+                              <HStack spacing="24px">
+                                <Radio {...field} name="wasCaught" value="true">True</Radio>
+                                <Radio {...field} name="wasCaught" value="false">False</Radio>
+                              </HStack>
+                              
+                      </FormControl>
+                      )}
+                    </Field>
+
+                    <Field name="wasReleased">
+                      {({field, form}) => (
+                        <FormControl colorScheme="teal" >
+                          <FormLabel mt={4} as="legend">Was the shark released?</FormLabel>
+                              <HStack spacing="24px">
+                                <Radio {...field} name="wasReleased" value={true}>True</Radio>
+                                <Radio {...field} name="wasReleased" value={false}>False</Radio>
+                              </HStack>
+                              <FormHelperText></FormHelperText>
+
+                      </FormControl>
+                      )}
+                    </Field> 
+                    
+                  </HStack>
+                                    
 
                   <Box >
                     <Field name="email" >
                       {({ field, form }) => (
                         <FormControl>
-                          <FormLabel mb={2} mt={2} htmlFor="email">Email</FormLabel>
+                          <FormLabel mb={2} mt={4} htmlFor="email">Email</FormLabel>
                           <Input {...field} id="email" placeholder="Email" />
                           {/* <FormErrorMessage>{form.errors.email}</FormErrorMessage> */}
                         </FormControl>
@@ -156,17 +198,32 @@ export default function Report() {
                     </Field>
                   </Box>
 
+                  
+
                   <Box m={3}>
-                    <Field>
-                      {({ field }) => (
-                        <FormControl>
-                          <Flex flexDirection="row" justifyContent="left">
-                            <Checkbox m={1} {...field} id="join" placeholder="join" />
-                            <FormLabel m={2} >Hear about Shark Stewards updates</FormLabel>
-                          </Flex>
-                        </FormControl>
-                      )}
-                    </Field>
+                    <HStack>
+                      <Field name="shouldSubscribe" >
+                        {({ field }) => (
+                          <FormControl>
+                            <Flex flexDirection="row" justifyContent="left">
+                              <Checkbox m={1} {...field} id="shouldSubscribe" />
+                              <FormLabel m={2} >Hear about Shark Stewards updates</FormLabel>
+                            </Flex>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="confirmedGetAppUpdates" >
+                        {({ field }) => (
+                          <FormControl>
+                            <Flex flexDirection="row" justifyContent="left">
+                              <Checkbox m={1} {...field} id="confirmedGetAppUpdates" />
+                              <FormLabel m={2} >Subscribe to App Updates</FormLabel>
+                            </Flex>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </HStack>  
                   </Box>
 
                   <Flex justifyContent="flex-end">

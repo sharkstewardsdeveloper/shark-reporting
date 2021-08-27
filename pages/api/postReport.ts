@@ -9,8 +9,24 @@ export interface postReportResponse {
 
 export default async function postReport(req: NextApiRequest, res: NextApiResponse) {
   console.log(req.body)
-  const { location, time: time_of_sighting, sharkType: shark_type, information: sighting_information, email  } = req.body;
-  if (location === '' || undefined || null) {
+  const { 
+    locationName, 
+    sightingTime,
+    sharkType,
+    description,
+    email,
+    locationLong,
+    locationLat,
+    userId, 
+    shouldSubscribe, 
+    authorName, 
+    confirmedGetAppUpdates, 
+    wasCaught, 
+    wasReleased,
+
+  } = req.body;
+
+  if (locationName == null || locationName === "") {
     res
       .status(400)
       .json({ error: "You must provide a location." });
@@ -18,21 +34,28 @@ export default async function postReport(req: NextApiRequest, res: NextApiRespon
   }
 
   const { data, error } = await supabase
-  .from('sighting_report')
+  .from('form_submissions')
   .insert([
     { 
-      location: location,
-      time_of_sighting: time_of_sighting,
-      shark_type: shark_type,
-      sighting_information: sighting_information,
-      latitude: 'otherValue',
-      longitude: 'otherValue',
+      user_id: userId,
+      location_name: locationName,
+      sighting_time: sightingTime,
+      shark_type: sharkType,
+      description: description,
+      location_lat: locationLat,
+      location_long: locationLong,
       email: email,
+      should_subscribe: shouldSubscribe ? shouldSubscribe : false,
+      author_name: authorName,
+      confirmed_get_app_updates: confirmedGetAppUpdates ? confirmedGetAppUpdates : false,
+      was_caught: wasCaught ? wasCaught : false,
+      was_released: wasCaught && wasReleased ? wasReleased : null,
        
     },
   ])
   if (error) {
-    res.status(401).json({ error: error } as postReportResponse);
+    console.log(error)
+    res.status(400).json({ error: error } as postReportResponse);
     return;
   } else {
     res
