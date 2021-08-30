@@ -97,11 +97,13 @@ export function AuthModal({ onClose }: AuthModalProps) {
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <InputRightElement width="4.5rem">
-                  <Button colorScheme="teal" 
-                    variant="solid" 
-                    h="1.75rem" 
-                    size="sm" 
-                    onClick={handleShowPassword}>
+                  <Button
+                    colorScheme="teal"
+                    variant="solid"
+                    h="1.75rem"
+                    size="sm"
+                    onClick={handleShowPassword}
+                  >
                     {showPassword ? "Hide" : "Show"}
                   </Button>
                 </InputRightElement>
@@ -116,7 +118,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
             <Button
               isLoading={loading}
               onClick={() => handleLogin(email, password)}
-              colorScheme="teal" 
+              colorScheme="teal"
               variant="solid"
             >
               Login
