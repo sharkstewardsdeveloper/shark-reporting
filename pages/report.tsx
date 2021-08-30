@@ -37,6 +37,8 @@ export default function Report() {
       .email('Invalid email'),
     authorName: Yup.string()
       .required("Required"),
+    sharkType: Yup.string()
+      .required("Required")
   });
 
   const handleFormSubmit = async (values) => {
@@ -86,7 +88,7 @@ export default function Report() {
               </Alert>
             )}
             <Formik
-                initialValues={{ locationName: "", email: "", sightingTime: "", authorName: "" }}
+                initialValues={{ locationName: "", email: "", sightingTime: "", authorName: "", sharkType: "" }}
                 validationSchema={reportFormSchema}
                 onSubmit={(values, actions) => {
                   console.log(values)
@@ -159,6 +161,8 @@ export default function Report() {
                       <FormControl colorScheme="teal">
                         <FormLabel mb={2} mt={2} htmlFor="sharkType">Shark Type</FormLabel>
                         <Input {...field} id="sharkType" placeholder="Type of Shark" />
+                        {form.errors.sharkType && form.touched.sharkType ? (<div>{form.errors.sharkType}</div>) : null}
+
                       </FormControl>
                     )}
                   </Field>
