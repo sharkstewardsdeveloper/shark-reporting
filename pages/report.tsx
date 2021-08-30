@@ -7,7 +7,6 @@ import {
   Button,
   Input,
   Checkbox,
-  Select,
   HStack,
   Textarea,
   VStack,
@@ -29,6 +28,8 @@ import {
 } from "formik";
 import * as Yup from "yup";
 import { useSessionUser } from "../session/useSessionUser";
+import { DateTime } from "luxon";
+import { DatePicker } from "../components/DatePicker";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -63,9 +64,9 @@ export default function Report() {
         locationName: Yup.string().required(
           "Please enter where you saw the shark."
         ),
-        sightingTime: Yup.date()
+        sightingTime: Yup.string()
           .required("Please enter when you saw the shark.")
-          .default(() => new Date()),
+          .default(() => DateTime.now().toISO()),
         email: Yup.string()
           .email("Invalid email")
           .default(() => {
@@ -78,12 +79,6 @@ export default function Report() {
       }),
     [session?.user]
   );
-
-  const handleSubmitClick = useCallback(() => {
-    if (currentStep === FormStep.SightingDetails && session == null) {
-      setCurrentStep(FormStep.AuthorInfo);
-    }
-  }, [session, currentStep, setCurrentStep]);
 
   async function submitForm<FormValuesType>(
     values: FormValuesType,
@@ -144,11 +139,11 @@ export default function Report() {
           )}
           <Formik
             initialValues={{
-              locationName: "",
-              email: "",
-              sightingTime: "",
-              authorName: "",
-              sharkType: "",
+              locationName: undefined,
+              email: undefined,
+              sightingTime: DateTime.now().toISO(),
+              authorName: undefined,
+              sharkType: undefined,
             }}
             validationSchema={reportFormSchema}
             onSubmit={(values, actions) => {
@@ -161,6 +156,7 @@ export default function Report() {
                 <Field name="locationName">
                   {({ field, form }) => (
                     <FormControl
+                      isRequired
                       colorScheme="teal"
                       isInvalid={
                         form.errors.locationName && form.touched.locationName
@@ -183,56 +179,7 @@ export default function Report() {
                   )}
                 </Field>
 
-                <Field name="sightingTime">
-                  {({ field, form }) => (
-                    <FormControl
-                      isRequired
-                      colorScheme="teal"
-                      isInvalid={
-                        form.errors.sightingTime && form.touched.sightingTime
-                      }
-                    >
-                      <FormLabel mb={2} mt={2} htmlFor="sightingTime">
-                        When?
-                      </FormLabel>
-                      <Select
-                        id="sightingTime"
-                        {...field}
-                        placeholder="Time of day"
-                      >
-                        <option value="3:00am">3:00 AM</option>
-                        <option value="4:00am">4:00 PM</option>
-                        <option value="5:00am">5:00 AM</option>
-                        <option value="6:00am">6:00 AM</option>
-                        <option value="7:00am">7:00 AM</option>
-                        <option value="8:00am">8:00 AM</option>
-                        <option value="9:00am">9:00 AM</option>
-                        <option value="10:00am">10:00 AM</option>
-                        <option value="11:00am">11:00 AM</option>
-                        <option value="12:00pm">12:00 PM</option>
-                        <option value="1:00pm">1:00 PM</option>
-                        <option value="2:00pm">2:00 PM</option>
-                        <option value="3:00pm">3:00 PM</option>
-                        <option value="4:00pm">4:00 PM</option>
-                        <option value="5:00pm">5:00 AM</option>
-                        <option value="6:00pm">6:00 PM</option>
-                        <option value="7:00pm">7:00 PM</option>
-                        <option value="8:00pm">8:00 PM</option>
-                        <option value="9:00pm">9:00 PM</option>
-                        <option value="10:00pm">10:00 PM</option>
-                        <option value="11:00pm">11:00 PM</option>
-                        <option value="12:00am">12:00 AM</option>
-                        <option value="1:00am">1:00 AM</option>
-                        <option value="2:00am">2:00 AM</option>
-                      </Select>
-                      {form.errors.sightingTime && form.touched.sightingTime ? (
-                        <FormErrorMessage>
-                          {form.errors.sightingTime}
-                        </FormErrorMessage>
-                      ) : null}
-                    </FormControl>
-                  )}
-                </Field>
+                <SightingDateField name="sightingTime" />
 
                 <Field name="sharkType">
                   {({ field, form }) => (
@@ -387,34 +334,83 @@ export default function Report() {
                     </HStack>
                   </Box>
                 )}
-                <Button
-                  mt={4}
-                  mb={2}
-                  width="100%"
-                  colorScheme="teal"
-                  isDisabled={!props.isValid}
-                  isLoading={props.isSubmitting || props.isValidating}
-                  onClick={
-                    session == null && currentStep === FormStep.SightingDetails
-                      ? handleSubmitClick
-                      : undefined
-                  }
-                  type={
-                    session == null && currentStep === FormStep.SightingDetails
-                      ? undefined
-                      : "submit"
-                  }
-                >
-                  {session == null && currentStep === FormStep.SightingDetails
-                    ? "Next"
-                    : "Submit"}
-                </Button>
+                {session == null && currentStep === FormStep.SightingDetails ? (
+                  <Button
+                    mt={4}
+                    mb={2}
+                    width="100%"
+                    colorScheme="teal"
+                    isDisabled={!props.dirty || !props.isValid}
+                    isLoading={props.isSubmitting || props.isValidating}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (
+                        currentStep === FormStep.SightingDetails &&
+                        session == null
+                      ) {
+                        setCurrentStep(FormStep.AuthorInfo);
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    mt={4}
+                    mb={2}
+                    width="100%"
+                    colorScheme="teal"
+                    isDisabled={!props.touched || !props.isValid}
+                    isLoading={props.isSubmitting || props.isValidating}
+                    type={"submit"}
+                  >
+                    Submit
+                  </Button>
+                )}
               </Form>
             )}
           </Formik>
         </Box>
       </VStack>
     </Flex>
+  );
+}
+
+function SightingDateField(props: FieldConfig) {
+  const { setFieldValue, setFieldError } = useFormikContext();
+  const [field, meta] = useField(props);
+  return (
+    <FormControl
+      isRequired
+      colorScheme="teal"
+      isInvalid={meta.error && meta.touched}
+    >
+      <FormLabel mb={2} mt={2} htmlFor="sightingTime">
+        When?
+      </FormLabel>
+      <DatePicker
+        id="sightingTime"
+        showTimeSelect
+        dateFormat={"MMMM d, yyyy h:mm aa"}
+        selected={
+          field.value == null
+            ? undefined
+            : DateTime.fromISO(field.value).toJSDate()
+        }
+        onChange={(value) => {
+          if (Array.isArray(value)) {
+            setFieldError(field.name, "Date ranges are not supported.");
+            return;
+          }
+          setFieldValue(field.name, DateTime.fromJSDate(value).toISO());
+        }}
+        // customInput={<Input />}
+        className="hi"
+      />
+      {meta.error && meta.touched ? (
+        <FormErrorMessage>{meta.error}</FormErrorMessage>
+      ) : null}
+    </FormControl>
   );
 }
 

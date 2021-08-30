@@ -18,6 +18,7 @@ import {
   MenuGroup,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
+import "../styles/date-picker.css";
 import { theme } from "../styles/theme";
 import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
