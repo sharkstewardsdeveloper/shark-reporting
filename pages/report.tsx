@@ -203,10 +203,8 @@ export default function Report() {
 
                       </FormControl>
                       )}
-                    </Field> 
-                    
-                  </HStack>
-                                    
+                    </Field>
+                  </HStack>     
 
                   <Box >
                     <Field name="email" >
@@ -219,8 +217,6 @@ export default function Report() {
                       )}
                     </Field>
                   </Box>
-
-                  
 
                   <Box m={3}>
                     <HStack>
