@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   AlertIcon,
@@ -15,43 +15,110 @@ import {
   FormLabel,
   FormErrorMessage,
   FormHelperText,
+  FormControlProps,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { Formik, Field, Form } from "formik";
+import {
+  Formik,
+  Field,
+  Form,
+  FormikHelpers,
+  useFormikContext,
+  useField,
+  FieldConfig,
+} from "formik";
 import * as Yup from "yup";
+import { useSessionUser } from "../session/useSessionUser";
+
+/** Which part of the form is currently being rendered. */
+enum FormStep {
+  /**
+   * The actual context of the shark sighting:
+   * - Location
+   * - Time
+   * - Shark Type
+   * - Was caught by a fisherman?
+   */
+  SightingDetails,
+  /**
+   * Self-reported information about the user, including
+   * whether they want to be subscribed to the Shark Stewards
+   * newsletter.
+   *
+   * If the user is currently logged in, this step is skipped
+   * (TODO: should gather this info on signup).
+   */
+  AuthorInfo,
+}
 
 export default function Report() {
+  const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const [errorMessage, setErrorMessage] = useState<string>();
   const router = useRouter();
+  const { session } = useSessionUser();
 
-  const reportFormSchema = Yup.object().shape({
-    locationName: Yup.string().required("Required"),
-    sightingTime: Yup.string().required("Required"),
-    email: Yup.string().email("Invalid email"),
-    authorName: Yup.string().required("Required"),
-    sharkType: Yup.string().required("Required"),
-  });
+  const reportFormSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        locationName: Yup.string().required(
+          "Please enter where you saw the shark."
+        ),
+        sightingTime: Yup.date()
+          .required("Please enter when you saw the shark.")
+          .default(() => new Date()),
+        email: Yup.string()
+          .email("Invalid email")
+          .default(() => {
+            return session?.user.email;
+          }),
+        authorName: Yup.string(),
+        sharkType: Yup.string().required(
+          `Select the type of shark you saw or "I don't know."`
+        ),
+      }),
+    [session?.user]
+  );
 
-  const handleFormSubmit = async (values) => {
-    console.log(values);
-    const data = await fetch("/api/postReport", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    });
-    if (data.status === 400) {
-      setErrorMessage(`Error: Location Required`);
-      console.log(data);
-    } else if (data.status === 401) {
-      setErrorMessage(`Server Error: ${JSON.stringify(data.status)}`);
-      console.log(data);
-    } else {
-      console.log(data);
-      router.push("/confirmReport");
+  const handleSubmitClick = useCallback(() => {
+    if (currentStep === FormStep.SightingDetails && session == null) {
+      setCurrentStep(FormStep.AuthorInfo);
     }
-  };
+  }, [session, currentStep, setCurrentStep]);
+
+  async function submitForm<FormValuesType>(
+    values: FormValuesType,
+    actions: FormikHelpers<FormValuesType>
+  ) {
+    console.log(values);
+    try {
+      const data = await fetch("/api/postReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session == null ? {} : { Authorization: session.accessToken }),
+        },
+        body: JSON.stringify(values),
+      });
+      console.log(data);
+      if (data.status === 400) {
+        setErrorMessage(`Please check the form for errors and try again.`);
+      } else if (data.status === 401) {
+        setErrorMessage(`Server Error: ${JSON.stringify(data.status)}`);
+      } else {
+        router.push("/confirmReport");
+      }
+    } catch (error: unknown) {
+      let message: string;
+      if (error instanceof Error) {
+        message = `Something went wrong: ${error.message}`;
+      } else {
+        message = `Something went wrong. Please try again.`;
+      }
+      setErrorMessage(message);
+    } finally {
+      actions.setSubmitting(false);
+    }
+  }
 
   return (
     <Flex
@@ -85,37 +152,22 @@ export default function Report() {
             }}
             validationSchema={reportFormSchema}
             onSubmit={(values, actions) => {
-              setTimeout(() => {
-                handleFormSubmit(values);
-                actions.setSubmitting(false);
-              }, 1000);
+              actions.setSubmitting(true);
+              submitForm(values, actions);
             }}
           >
             {(props) => (
               <Form>
-                <Field name="authorName">
-                  {({ field, form }) => (
-                    <FormControl colorScheme="teal">
-                      <FormLabel mb={2} htmlFor="authorName">
-                        Author Name
-                      </FormLabel>
-                      <Input
-                        {...field}
-                        id="authorName"
-                        placeholder="Your Name"
-                      />
-                      {form.errors.authorName && form.touched.authorName ? (
-                        <div>{form.errors.authorName}</div>
-                      ) : null}
-                    </FormControl>
-                  )}
-                </Field>
-
                 <Field name="locationName">
                   {({ field, form }) => (
-                    <FormControl colorScheme="teal">
+                    <FormControl
+                      colorScheme="teal"
+                      isInvalid={
+                        form.errors.locationName && form.touched.locationName
+                      }
+                    >
                       <FormLabel mb={2} mt={2} htmlFor="locationName">
-                        Location
+                        Where did you see the shark(s)?
                       </FormLabel>
                       <Input
                         {...field}
@@ -123,7 +175,9 @@ export default function Report() {
                         placeholder="San Francisco"
                       />
                       {form.errors.locationName && form.touched.locationName ? (
-                        <div>{form.errors.locationName}</div>
+                        <FormErrorMessage>
+                          {form.errors.locationName}
+                        </FormErrorMessage>
                       ) : null}
                     </FormControl>
                   )}
@@ -131,9 +185,15 @@ export default function Report() {
 
                 <Field name="sightingTime">
                   {({ field, form }) => (
-                    <FormControl colorScheme="teal">
+                    <FormControl
+                      isRequired
+                      colorScheme="teal"
+                      isInvalid={
+                        form.errors.sightingTime && form.touched.sightingTime
+                      }
+                    >
                       <FormLabel mb={2} mt={2} htmlFor="sightingTime">
-                        Time of Sighting
+                        When?
                       </FormLabel>
                       <Select
                         id="sightingTime"
@@ -166,7 +226,9 @@ export default function Report() {
                         <option value="2:00am">2:00 AM</option>
                       </Select>
                       {form.errors.sightingTime && form.touched.sightingTime ? (
-                        <div>{form.errors.sightingTime}</div>
+                        <FormErrorMessage>
+                          {form.errors.sightingTime}
+                        </FormErrorMessage>
                       ) : null}
                     </FormControl>
                   )}
@@ -174,27 +236,64 @@ export default function Report() {
 
                 <Field name="sharkType">
                   {({ field, form }) => (
-                    <FormControl colorScheme="teal">
+                    <FormControl
+                      isRequired
+                      colorScheme="teal"
+                      isInvalid={
+                        form.errors.sharkType && form.touched.sharkType
+                      }
+                    >
                       <FormLabel mb={2} mt={2} htmlFor="sharkType">
-                        Shark Type
+                        Do you know what kind of shark it was?
                       </FormLabel>
+                      {/* TODO replace this with shark picker component, default to "I don't know" */}
                       <Input
                         {...field}
                         id="sharkType"
                         placeholder="Type of Shark"
                       />
                       {form.errors.sharkType && form.touched.sharkType ? (
-                        <div>{form.errors.sharkType}</div>
+                        <FormErrorMessage>
+                          {form.errors.sharkType}
+                        </FormErrorMessage>
                       ) : null}
                     </FormControl>
                   )}
                 </Field>
 
+                <Field name="wasCaught">
+                  {({ field, form }) => (
+                    <FormControl isRequired colorScheme="teal" marginTop={2}>
+                      <HStack spacing="24px">
+                        <Checkbox {...field} name="wasCaught" size="lg">
+                          <FormLabel marginTop={2}>
+                            I saw the shark get caught by a fisherman.
+                          </FormLabel>
+                        </Checkbox>
+                      </HStack>
+                      <FormHelperText>
+                        Check this box if you saw the shark out of the water
+                        after being removed by a human (even if it was later
+                        returned safely).
+                      </FormHelperText>
+                    </FormControl>
+                  )}
+                </Field>
+                <SharkWasReleasedCheckboxField
+                  name="wasReleased"
+                  marginBottom={2}
+                />
+
                 <Field name="description">
                   {({ field, form }) => (
-                    <FormControl colorScheme="teal">
+                    <FormControl
+                      colorScheme="teal"
+                      isInvalid={
+                        form.errors.description && form.touched.description
+                      }
+                    >
                       <FormLabel mb={2} mt={2} htmlFor="description">
-                        Description
+                        Is there other information you can provide?
                       </FormLabel>
                       <Textarea
                         {...field}
@@ -205,115 +304,162 @@ export default function Report() {
                         The more accurate our data the more of an impact we can
                         make{" "}
                       </FormHelperText>
+                      {form.errors.description && form.touched.description ? (
+                        <FormErrorMessage>
+                          {form.errors.description}
+                        </FormErrorMessage>
+                      ) : null}
                     </FormControl>
                   )}
                 </Field>
 
-                <HStack>
-                  <Field name="wasCaught">
-                    {({ field, form }) => (
-                      <FormControl colorScheme="teal">
-                        <FormLabel mt={4} as="legend">
-                          Was the shark caught?
-                        </FormLabel>
-                        <HStack spacing="24px">
-                          <Checkbox {...field} name="wasCaught" value={true}>
-                            True
-                          </Checkbox>
-                          <Checkbox {...field} name="wasCaught" value={false}>
-                            False
-                          </Checkbox>
-                        </HStack>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field name="wasReleased">
-                    {({ field, form }) => (
-                      <FormControl colorScheme="teal">
-                        <FormLabel mt={6} as="legend">
-                          Was the shark released?
-                        </FormLabel>
-                        <HStack spacing="24px">
-                          <Checkbox {...field} name="wasReleased" value={true}>
-                            True
-                          </Checkbox>
-                          <Checkbox {...field} name="wasReleased" value={false}>
-                            False
-                          </Checkbox>
-                        </HStack>
-                        <FormHelperText></FormHelperText>
-                      </FormControl>
-                    )}
-                  </Field>
-                </HStack>
-
-                <Box>
-                  <Field name="email">
-                    {({ field, form }) => (
-                      <FormControl>
-                        <FormLabel mb={2} mt={4} htmlFor="email">
-                          Email
-                        </FormLabel>
-                        <Input {...field} id="email" placeholder="Email" />
-                        {form.errors.email && form.touched.email ? (
-                          <div>{form.errors.email}</div>
-                        ) : null}
-                      </FormControl>
-                    )}
-                  </Field>
-                </Box>
-
-                <Box m={3}>
-                  <HStack>
-                    <Field name="shouldSubscribe">
-                      {({ field }) => (
-                        <FormControl>
-                          <Flex flexDirection="row" justifyContent="left">
-                            <Checkbox m={1} {...field} id="shouldSubscribe" />
-                            <FormLabel m={2}>
-                              Hear about Shark Stewards updates
-                            </FormLabel>
-                          </Flex>
+                {currentStep === FormStep.AuthorInfo && (
+                  <Box>
+                    <Field name="authorName">
+                      {({ field, form }) => (
+                        <FormControl colorScheme="teal">
+                          <FormLabel mb={2} htmlFor="authorName">
+                            Author Name
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            id="authorName"
+                            placeholder="Your Name"
+                          />
+                          {form.errors.authorName && form.touched.authorName ? (
+                            <FormErrorMessage>
+                              {form.errors.authorName}
+                            </FormErrorMessage>
+                          ) : null}
                         </FormControl>
                       )}
                     </Field>
-
-                    <Field name="confirmedGetAppUpdates">
-                      {({ field }) => (
+                    <Field name="email">
+                      {({ field, form }) => (
                         <FormControl>
-                          <Flex flexDirection="row" justifyContent="left">
-                            <Checkbox
-                              m={1}
-                              {...field}
-                              id="confirmedGetAppUpdates"
-                            />
-                            <FormLabel m={2}>
-                              Subscribe to App Updates
-                            </FormLabel>
-                          </Flex>
+                          <FormLabel mb={2} mt={4} htmlFor="email">
+                            Email
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            id="email"
+                            placeholder="Email"
+                            type="email"
+                          />
+                          {form.errors.email && form.touched.email ? (
+                            <FormErrorMessage>
+                              {form.errors.email}
+                            </FormErrorMessage>
+                          ) : null}
                         </FormControl>
                       )}
                     </Field>
-                  </HStack>
-                </Box>
+                    <HStack>
+                      <Field name="shouldSubscribe">
+                        {({ field }) => (
+                          <FormControl>
+                            <Flex flexDirection="row" justifyContent="left">
+                              <Checkbox m={1} {...field} id="shouldSubscribe" />
+                              <FormLabel m={2}>
+                                Hear about Shark Stewards updates
+                              </FormLabel>
+                            </Flex>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                <Flex justifyContent="flex-end">
-                  <Button
-                    mt={1}
-                    mb={2}
-                    colorScheme="teal"
-                    isLoading={props.isSubmitting}
-                    type="submit"
-                  >
-                    Submit
-                  </Button>
-                </Flex>
+                      <Field name="confirmedGetAppUpdates">
+                        {({ field }) => (
+                          <FormControl>
+                            <Flex flexDirection="row" justifyContent="left">
+                              <Checkbox
+                                m={1}
+                                {...field}
+                                id="confirmedGetAppUpdates"
+                              />
+                              <FormLabel m={2}>
+                                Subscribe to App Updates
+                              </FormLabel>
+                            </Flex>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </HStack>
+                  </Box>
+                )}
+                <Button
+                  mt={4}
+                  mb={2}
+                  width="100%"
+                  colorScheme="teal"
+                  isDisabled={!props.isValid}
+                  isLoading={props.isSubmitting || props.isValidating}
+                  onClick={
+                    session == null && currentStep === FormStep.SightingDetails
+                      ? handleSubmitClick
+                      : undefined
+                  }
+                  type={
+                    session == null && currentStep === FormStep.SightingDetails
+                      ? undefined
+                      : "submit"
+                  }
+                >
+                  {session == null && currentStep === FormStep.SightingDetails
+                    ? "Next"
+                    : "Submit"}
+                </Button>
               </Form>
             )}
           </Formik>
         </Box>
       </VStack>
     </Flex>
+  );
+}
+
+/**
+ * @see https://formik.org/docs/examples/dependent-fields
+ */
+function SharkWasReleasedCheckboxField({
+  marginBottom,
+  ...fieldProps
+}: FieldConfig & Pick<FormControlProps, "marginBottom">) {
+  const {
+    values: { wasCaught },
+    setFieldValue,
+  } = useFormikContext<{ wasCaught?: boolean }>();
+  const [field, meta] = useField(fieldProps);
+
+  React.useEffect(() => {
+    if (!wasCaught) {
+      setFieldValue(fieldProps.name, undefined, false);
+    }
+  }, [wasCaught, setFieldValue, fieldProps.name]);
+
+  if (!wasCaught) {
+    return null;
+  }
+
+  return (
+    <FormControl
+      isRequired
+      colorScheme="teal"
+      isDisabled={!wasCaught}
+      isInvalid={meta.error && meta.touched}
+      marginBottom={marginBottom}
+    >
+      <Checkbox {...field} name="wasReleased" size="lg">
+        <FormLabel marginTop={2}>
+          The shark was safely released after being caught.
+        </FormLabel>
+      </Checkbox>
+      {wasCaught && (
+        <FormHelperText>
+          Check this box if you saw the fisherman who caught the shark(s) also
+          release them safely back into the ocean.
+        </FormHelperText>
+      )}
+    </FormControl>
   );
 }
