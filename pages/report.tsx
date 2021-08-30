@@ -86,7 +86,7 @@ export default function Report() {
               </Alert>
             )}
             <Formik
-                initialValues={{ locationName: "", email: "", }}
+                initialValues={{ locationName: "", email: "", sightingTime: "", authorName: "" }}
                 validationSchema={reportFormSchema}
                 onSubmit={(values, actions) => {
                   console.log(values)
