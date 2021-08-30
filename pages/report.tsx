@@ -161,8 +161,8 @@ export default function Report() {
                         <FormControl colorScheme="teal" >
                           <FormLabel mt={4} as="legend">Was the shark caught?</FormLabel>
                               <HStack spacing="24px">
-                                <Radio {...field} name="wasCaught" value="true">True</Radio>
-                                <Radio {...field} name="wasCaught" value="false">False</Radio>
+                                <Checkbox {...field} name="wasCaught" value={true}>True</Checkbox>
+                                <Checkbox {...field} name="wasCaught" value={false}>False</Checkbox>
                               </HStack>
                               
                       </FormControl>
@@ -174,8 +174,8 @@ export default function Report() {
                         <FormControl colorScheme="teal" >
                           <FormLabel mt={6} as="legend">Was the shark released?</FormLabel>
                               <HStack spacing="24px">
-                                <Radio {...field} name="wasReleased" value={true}>True</Radio>
-                                <Radio {...field} name="wasReleased" value={false}>False</Radio>
+                                <Checkbox {...field} name="wasReleased" value={true}>True</Checkbox>
+                                <Checkbox {...field} name="wasReleased" value={false}>False</Checkbox>
                               </HStack>
                               <FormHelperText></FormHelperText>
 
