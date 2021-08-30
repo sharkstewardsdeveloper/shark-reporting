@@ -89,7 +89,6 @@ export default function Report() {
                 initialValues={{ locationName: "", email: "", sightingTime: "", authorName: "", sharkType: "" }}
                 validationSchema={reportFormSchema}
                 onSubmit={(values, actions) => {
-                  console.log(values)
                   setTimeout(() => {
                     handleFormSubmit(values)
                     actions.setSubmitting(false)
