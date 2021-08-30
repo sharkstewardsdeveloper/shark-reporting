@@ -45,34 +45,6 @@ export function Account({ session }: AccountProps) {
     }
   }
 
-  async function updateProfile({ username, avatar_url }) {
-    // try {
-    //   setLoading(true);
-    //   const user = supabase.auth.user();
-    //   const updates = {
-    //     id: user.id,
-    //     username,
-    //     avatar_url,
-    //     updated_at: new Date(),
-    //   };
-    //   let { error } = await supabase.from("profiles").upsert(updates, {
-    //     returning: "minimal", // Don't return the value after inserting
-    //   });
-    //   if (error) {
-    //     throw error;
-    //   }
-    // } catch (error) {
-    //   alert(error.message);
-    // } finally {
-    //   setLoading(false);
-    // }
-  }
-
-  // function updatePassword() {
-  //   supabase.auth.update({
-  //     password,
-  //   }).catch(error => console.log(error)).then(() => console.log("it worked"));
-  // }
   return (
     <div>
       {isLoading && <p>Loading...</p>}
