@@ -4,12 +4,10 @@ import {
   AlertIcon,
   Box,
   Flex,
-  Text,
   Button,
   Input,
   Checkbox,
   Select,
-  Radio,
   HStack,
   Textarea,
   VStack,
@@ -20,10 +18,26 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from 'next/router'
 import { Formik, Field, Form } from "formik";
+import * as Yup from 'yup';
+
+
 
 export default function Report() {
   const [errorMessage, setErrorMessage] = useState<string>();
   const router = useRouter()
+
+  const reportFormSchema = Yup.object().shape({
+    locationName: Yup.string()
+      .required('Required'),
+    sightingTime: Yup.string()
+      .required('Required'),
+    email: Yup.string()
+      .email('Invalid email'),
+    authorName: Yup.string()
+      .required("Required"),
+    sharkType: Yup.string()
+      .required("Required")
+  });
 
   const handleFormSubmit = async (values) => {
     console.log(values)
@@ -46,6 +60,7 @@ export default function Report() {
       }
 
   }
+
 
   return (
     <Flex
@@ -71,9 +86,9 @@ export default function Report() {
               </Alert>
             )}
             <Formik
-                initialValues={{ locationName: "" }}
+                initialValues={{ locationName: "", email: "", sightingTime: "", authorName: "", sharkType: "" }}
+                validationSchema={reportFormSchema}
                 onSubmit={(values, actions) => {
-                  console.log(values)
                   setTimeout(() => {
                     handleFormSubmit(values)
                     actions.setSubmitting(false)
@@ -87,6 +102,7 @@ export default function Report() {
                       <FormControl colorScheme="teal">
                         <FormLabel mb={2} htmlFor="authorName">Author Name</FormLabel>
                         <Input {...field} id="authorName" placeholder="Your Name" />
+                        {form.errors.authorName && form.touched.authorName ? (<div>{form.errors.authorName}</div>) : null}
                       </FormControl>
                     )}
                   </Field>
@@ -96,7 +112,7 @@ export default function Report() {
                       <FormControl colorScheme="teal">
                         <FormLabel mb={2} mt={2} htmlFor="locationName">Location</FormLabel>
                         <Input {...field} id="locationName" placeholder="San Francisco" />
-                        {/* <FormErrorMessage>{form.errors.location}</FormErrorMessage> */}
+                        {form.errors.locationName && form.touched.locationName ? (<div>{form.errors.locationName}</div>) : null}
                       </FormControl>
                     )}
                   </Field>
@@ -131,7 +147,8 @@ export default function Report() {
                           <option value="1:00am">1:00 AM</option>
                           <option value="2:00am">2:00 AM</option>
                         </Select>
-                        {/* <FormErrorMessage>{form.errors.name}</FormErrorMessage> */}
+                        {form.errors.sightingTime && form.touched.sightingTime ? (<div>{form.errors.sightingTime}</div>) : null}
+
                       </FormControl>
                     )}
                   </Field>
@@ -141,6 +158,8 @@ export default function Report() {
                       <FormControl colorScheme="teal">
                         <FormLabel mb={2} mt={2} htmlFor="sharkType">Shark Type</FormLabel>
                         <Input {...field} id="sharkType" placeholder="Type of Shark" />
+                        {form.errors.sharkType && form.touched.sharkType ? (<div>{form.errors.sharkType}</div>) : null}
+
                       </FormControl>
                     )}
                   </Field>
@@ -161,8 +180,8 @@ export default function Report() {
                         <FormControl colorScheme="teal" >
                           <FormLabel mt={4} as="legend">Was the shark caught?</FormLabel>
                               <HStack spacing="24px">
-                                <Radio {...field} name="wasCaught" value="true">True</Radio>
-                                <Radio {...field} name="wasCaught" value="false">False</Radio>
+                                <Checkbox {...field} name="wasCaught" value={true}>True</Checkbox>
+                                <Checkbox {...field} name="wasCaught" value={false}>False</Checkbox>
                               </HStack>
                               
                       </FormControl>
@@ -174,17 +193,15 @@ export default function Report() {
                         <FormControl colorScheme="teal" >
                           <FormLabel mt={6} as="legend">Was the shark released?</FormLabel>
                               <HStack spacing="24px">
-                                <Radio {...field} name="wasReleased" value={true}>True</Radio>
-                                <Radio {...field} name="wasReleased" value={false}>False</Radio>
+                                <Checkbox {...field} name="wasReleased" value={true}>True</Checkbox>
+                                <Checkbox {...field} name="wasReleased" value={false}>False</Checkbox>
                               </HStack>
                               <FormHelperText></FormHelperText>
 
                       </FormControl>
                       )}
-                    </Field> 
-                    
-                  </HStack>
-                                    
+                    </Field>
+                  </HStack>     
 
                   <Box >
                     <Field name="email" >
@@ -192,13 +209,11 @@ export default function Report() {
                         <FormControl>
                           <FormLabel mb={2} mt={4} htmlFor="email">Email</FormLabel>
                           <Input {...field} id="email" placeholder="Email" />
-                          {/* <FormErrorMessage>{form.errors.email}</FormErrorMessage> */}
+                          {form.errors.email && form.touched.email ? (<div>{form.errors.email}</div>) : null}
                         </FormControl>
                       )}
                     </Field>
                   </Box>
-
-                  
 
                   <Box m={3}>
                     <HStack>
