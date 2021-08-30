@@ -87,7 +87,7 @@ function AppHeader() {
           >
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
-          <MenuList colorScheme="teal">
+          <MenuList>
             {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
             {session == null && <MenuItem onClick={onOpenSignUp}>Sign Up</MenuItem>}
             {session != null && (
