@@ -1,8 +1,8 @@
-# Shark Stewards
+# Shark Stewards - Shark Reporting
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-🦈 Next.js-based web application to help track Shark sightings across California in association with https://sharkstewards.org/.
+🦈📝 Next.js-based web application to help track Shark sightings across California in association with https://sharkstewards.org/.
 
 ## Building and Running the App
 
