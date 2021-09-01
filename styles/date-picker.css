@@ -1,8 +1,8 @@
 .light-theme {
   --light-gray: var(--chakra-colors-gray-200);
   --gray: var(--chakra-colors-gray-300);
-  --blue700: var(--chakra-colors-blue-600);
-  --blue600: var(--chakra-colors-blue-500);
+  --blue700: var(--chakra-colors-teal-600);
+  --blue600: var(--chakra-colors-teal-500);
   --blue500: var(--chakra-colors-gray-400);
   --blue400: var(--chakra-colors-gray-300);
   --blue300: var(--chakra-colors-gray-200);
@@ -11,12 +11,13 @@
   --monthBackground: var(--chakra-colors-white);
   --text: var(--chakra-colors-black);
   --negative-text: var(--chakra-colors-white);
+  --content-background: var(--chakra-colors-white);
 }
 .dark-theme {
   --light-gray: var(--chakra-colors-gray-600);
   --gray: var(--chakra-colors-gray-500);
-  --blue700: var(--chakra-colors-blue-600);
-  --blue600: var(--chakra-colors-blue-300);
+  --blue700: var(--chakra-colors-teal-600);
+  --blue600: var(--chakra-colors-teal-300);
   --blue500: var(--chakra-colors-gray-500);
   --blue400: var(--chakra-colors-gray-600);
   --blue300: var(--chakra-colors-gray-700);
@@ -25,10 +26,11 @@
   --monthBackground: var(--chakra-colors-gray-700);
   --text: var(--chakra-colors-gray-200);
   --negative-text: var(--chakra-colors-black);
+  --content-background: var(--chakra-colors-black);
 }
 
 /* if you dont want to use chakra's theme use this class in the wrapping div. These are the exact original values */
-.light-theme-original {
+/* .light-theme-original {
   --light-gray: #cccccc;
   --gray: #b3b3b3;
   --blue700: #2a69ac;
@@ -38,11 +40,12 @@
   --blue300: #e2e8f0;
   --blue200: #edf2f7;
   --blue100: #f7fafc;
-}
+} */
 .react-datepicker {
   font-family: unset;
   font-size: 0.9rem;
   border-color: var(--light-gray);
+  background-color: var(--content-background);
 }
 
 .react-datepicker-wrapper,
