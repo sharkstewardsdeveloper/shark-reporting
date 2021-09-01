@@ -28,12 +28,17 @@ export default function Home() {
       <Text>Report shark sightings</Text>
 
       <Stack direction="row" spacing={4} m={3}>
-        <Button colorScheme="teal" variant="solid">
-          Educate
-        </Button>
-        <Button colorScheme="teal" variant="outline">
-          <Link href="/report">Report</Link>
-        </Button>
+        <Link href="/education">
+          <Button colorScheme="teal" variant="solid">
+            Educate
+          </Button>
+        </Link>
+
+        <Link href="/report">
+          <Button colorScheme="teal" variant="outline">
+            Report
+          </Button>
+        </Link>
       </Stack>
     </Flex>
   );
