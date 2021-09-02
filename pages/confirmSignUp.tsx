@@ -10,19 +10,11 @@ export default function ConfirmSignup() {
       flexDirection="column"
       width="100%"
       height="100%"
-      backgroundColor={[
-        "brand.primaryLight",
-        "brand.primaryLight",
-        "brand.primaryLight",
-      ]}
-      color={["brand.white", "brand.white", "brand.white"]}
     >
       <Heading m={1}>Thank you for signing up!</Heading>
       <Text>A confirmation link has been sent to your email.</Text>
       <Link href="/" passHref>
-        <Button m={5} colorScheme="teal">
-          Home
-        </Button>
+        <Button m={5}>Home</Button>
       </Link>
     </Flex>
   );

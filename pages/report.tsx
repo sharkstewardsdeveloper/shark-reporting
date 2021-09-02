@@ -122,12 +122,6 @@ export default function Report() {
       flexDirection="column"
       width="100%"
       height="100%"
-      backgroundColor={[
-        "brand.primaryLight",
-        "brand.primaryLight",
-        "brand.primaryLight",
-      ]}
-      color={["brand.white", "brand.white", "brand.white"]}
     >
       <VStack align="center" margin="auto" width="lg" height="100%">
         <Box m={2} p={3}>
@@ -157,7 +151,6 @@ export default function Report() {
                   {({ field, form }) => (
                     <FormControl
                       isRequired
-                      colorScheme="teal"
                       isInvalid={
                         form.errors.locationName && form.touched.locationName
                       }
@@ -185,7 +178,6 @@ export default function Report() {
                   {({ field, form }) => (
                     <FormControl
                       isRequired
-                      colorScheme="teal"
                       isInvalid={
                         form.errors.sharkType && form.touched.sharkType
                       }
@@ -210,7 +202,7 @@ export default function Report() {
 
                 <Field name="wasCaught">
                   {({ field, form }) => (
-                    <FormControl isRequired colorScheme="teal" marginTop={2}>
+                    <FormControl isRequired marginTop={2}>
                       <HStack spacing="24px">
                         <Checkbox {...field} name="wasCaught" size="lg">
                           <FormLabel marginTop={2}>
@@ -234,7 +226,6 @@ export default function Report() {
                 <Field name="description">
                   {({ field, form }) => (
                     <FormControl
-                      colorScheme="teal"
                       isInvalid={
                         form.errors.description && form.touched.description
                       }
@@ -264,7 +255,7 @@ export default function Report() {
                   <Box>
                     <Field name="authorName">
                       {({ field, form }) => (
-                        <FormControl colorScheme="teal">
+                        <FormControl>
                           <FormLabel mb={2} htmlFor="authorName">
                             Author Name
                           </FormLabel>
@@ -339,7 +330,6 @@ export default function Report() {
                     mt={4}
                     mb={2}
                     width="100%"
-                    colorScheme="teal"
                     isDisabled={!props.dirty || !props.isValid}
                     isLoading={props.isSubmitting || props.isValidating}
                     onClick={(event) => {
@@ -359,7 +349,6 @@ export default function Report() {
                     mt={4}
                     mb={2}
                     width="100%"
-                    colorScheme="teal"
                     isDisabled={!props.touched || !props.isValid}
                     isLoading={props.isSubmitting || props.isValidating}
                     type={"submit"}
@@ -380,11 +369,7 @@ function SightingDateField(props: FieldConfig) {
   const { setFieldValue, setFieldError } = useFormikContext();
   const [field, meta] = useField(props);
   return (
-    <FormControl
-      isRequired
-      colorScheme="teal"
-      isInvalid={meta.error && meta.touched}
-    >
+    <FormControl isRequired isInvalid={meta.error && meta.touched}>
       <FormLabel mb={2} mt={2} htmlFor="sightingTime">
         When?
       </FormLabel>
@@ -404,8 +389,6 @@ function SightingDateField(props: FieldConfig) {
           }
           setFieldValue(field.name, DateTime.fromJSDate(value).toISO());
         }}
-        // customInput={<Input />}
-        className="hi"
       />
       {meta.error && meta.touched ? (
         <FormErrorMessage>{meta.error}</FormErrorMessage>
@@ -440,7 +423,6 @@ function SharkWasReleasedCheckboxField({
   return (
     <FormControl
       isRequired
-      colorScheme="teal"
       isDisabled={!wasCaught}
       isInvalid={meta.error && meta.touched}
       marginBottom={marginBottom}
