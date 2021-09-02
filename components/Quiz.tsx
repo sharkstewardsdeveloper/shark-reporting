@@ -81,9 +81,13 @@ export default function Quiz({}) {
 
   return (
     <Box maxW="lg" borderRadius="lg" overflow="hidden">
-      <HStack justifyContent="space-between">
-        <ArrowLeftIcon onClick={previousQuestion} />
-        <ArrowRightIcon onClick={nextQuestion} />
+      <HStack mb={3} justifyContent="space-between">
+        <Button onClick={previousQuestion}>
+          <ArrowLeftIcon />
+        </Button>
+        <Button onClick={nextQuestion}>
+          <ArrowRightIcon />
+        </Button>
       </HStack>
       <Box p="2">
         <Image
