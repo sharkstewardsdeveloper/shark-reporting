@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-
-import {
-  Heading,
-  Flex,
-  Box,
-  Badge,
-  Text,
-  Button,
-  Image,
-  VStack,
-} from "@chakra-ui/react";
+import { Flex, VStack } from "@chakra-ui/react";
 import Quiz from "../components/Quiz";
 
 export default function Education() {
