@@ -17,16 +17,12 @@ export default function Quiz({}) {
     setIsCorrect(null);
     if (questionIndex < questions.length - 1) {
       setQuestionIndex(questionIndex + 1);
-    } else {
-      alert("quiz over");
     }
   };
 
   const previousQuestion = () => {
     if (questionIndex > 0) {
       setQuestionIndex(questionIndex - 1);
-    } else {
-      alert("beginning");
     }
   };
 
@@ -89,7 +85,7 @@ export default function Quiz({}) {
         <ArrowLeftIcon onClick={previousQuestion} />
         <ArrowRightIcon onClick={nextQuestion} />
       </HStack>
-      <Box p="6">
+      <Box p="2">
         <Image
           borderRadius="40px"
           mt={2}
@@ -103,21 +99,21 @@ export default function Quiz({}) {
         </Text>
         <Box d="flex" mt="2" justifyContent="space-between" m={5}>
           {isCorrect === false ? (
-            <Icon mt={4} viewBox="0 0 200 200" color="red.500">
+            <Icon mt={4} mr={4} viewBox="0 0 200 200" color="red.500">
               <path
                 fill="currentColor"
                 d="M 100, 100 m -75, 0 a 75,75 0 1,0 150,0 a 75,75 0 1,0 -150,0"
               />
             </Icon>
           ) : isCorrect === true ? (
-            <Icon mt={4} viewBox="0 0 200 200" color="green.500">
+            <Icon mt={4} mr={4} viewBox="0 0 200 200" color="green.500">
               <path
                 fill="currentColor"
                 d="M 100, 100 m -75, 0 a 75,75 0 1,0 150,0 a 75,75 0 1,0 -150,0"
               />
             </Icon>
           ) : (
-            <Icon mt={4} viewBox="0 0 200 200" color="grey.500">
+            <Icon mt={4} mr={4} viewBox="0 0 200 200" color="grey.500">
               <path
                 fill="currentColor"
                 d="M 100, 100 m -75, 0 a 75,75 0 1,0 150,0 a 75,75 0 1,0 -150,0"
@@ -129,11 +125,11 @@ export default function Quiz({}) {
             <Button
               onClick={() => checkAnswer(choice)}
               key={index}
-              m="1"
+              m={1}
               fontWeight="semibold"
               lineHeight="short"
             >
-              {choice}
+              <Text m={2}>{choice}</Text>
             </Button>
           ))}
         </Box>
