@@ -75,7 +75,7 @@ export default function Quiz({}) {
       question: "What is the biggest danger sharks face today?",
       answer: "Overfishing",
       choices: ["Predation", "Overfishing", "Habitat Loss", "Mutation"],
-      fact: "Overfishing represents the greatest threat to sharks and their survival.",
+      fact: "Between 63 and 273 million sharks are being killed annually due to overfishing.",
     },
   ];
 
