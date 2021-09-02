@@ -1,13 +1,13 @@
 import React from "react";
 import { ArrowRightIcon, ArrowLeftIcon } from "@chakra-ui/icons";
 import { Box, Badge, Text, Button, Image, HStack } from "@chakra-ui/react";
-import Link from "next/link";
 
 export default function QuizQuestion({
   sharkQuestion,
   nextQuestion,
   questionIndex,
   previousQuestion,
+  checkAnswer,
 }) {
   return (
     <Box maxW="lg" borderRadius="lg" overflow="hidden">
@@ -29,22 +29,15 @@ export default function QuizQuestion({
         </Text>
         <Box d="flex" mt="2" justifyContent="space-between" m={5}>
           {sharkQuestion.choices.map((choice, index) => (
-            <Button
-              key={index}
-              colorScheme="teal"
-              m="1"
-              fontWeight="semibold"
-              as="h4"
-              lineHeight="short"
-            >
-              {index + 1}. {choice}
+            <Button key={index} m="1" fontWeight="semibold" lineHeight="short">
+              {choice}
             </Button>
           ))}
         </Box>
 
         <Box d="flex" mt="2" alignItems="center">
           <Box color="white" fontSize="sm">
-            {sharkQuestion.fact}
+            <Text>{sharkQuestion.fact}</Text>
           </Box>
         </Box>
       </Box>
