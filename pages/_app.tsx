@@ -52,16 +52,9 @@ function AppHeader() {
 
   return (
     <>
-      <Flex
-        as="header"
-        align="center"
-        justify="space-between"
-        wrap="wrap"
-        width="100%"
-        backgroundColor={["brand.primary", "brand.primary", "brand.primary"]}
-      >
-        <Flex w={["60%", "40%", "40%"]} align="center" justify="flex-start">
-          <Link title="Home" href="/">
+      <Flex as="header" align="center" justify="space-between" wrap="wrap">
+        <Link title="Home" href="/">
+          <Flex align="center" justify="flex-start">
             <Image
               m={1}
               boxSize={["42px", "64px", "88px"]}
@@ -69,25 +62,14 @@ function AppHeader() {
               src="/ssLogo.png"
               alt="Shark Stewards"
             />
-          </Link>
-
-          <Heading
-            color="brand.white"
-            m={1}
-            fontSize={["medium", "large", "3xl"]}
-          >
-            Shark Reporter
-          </Heading>
-        </Flex>
+            <Heading m={1} fontSize={["large", "3xl", "3xl"]}>
+              Shark Reporter
+            </Heading>
+          </Flex>
+        </Link>
 
         <Menu>
-          <MenuButton
-            colorScheme="teal"
-            variant="solid"
-            m={3}
-            as={Button}
-            isActive={false}
-          >
+          <MenuButton variant="solid" m={3} as={Button} isActive={false}>
             {session == null ? "Menu" : session.user.email}
           </MenuButton>
           <MenuList>

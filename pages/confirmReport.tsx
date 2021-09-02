@@ -10,12 +10,6 @@ export default function ConfirmReport() {
       flexDirection="column"
       width="100%"
       height="100%"
-      backgroundColor={[
-        "brand.primaryLight",
-        "brand.primaryLight",
-        "brand.primaryLight",
-      ]}
-      color={["brand.white", "brand.white", "brand.white"]}
     >
       <Heading m={1}>Thank you for reporting!</Heading>
       <Text>
@@ -23,9 +17,7 @@ export default function ConfirmReport() {
         help to protect sharks and humans alike.
       </Text>
       <Link href="/" passHref>
-        <Button m={5} colorScheme="teal">
-          Home
-        </Button>
+        <Button m={5}>Home</Button>
       </Link>
     </Flex>
   );

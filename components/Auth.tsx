@@ -98,7 +98,6 @@ export function AuthModal({ onClose }: AuthModalProps) {
                 />
                 <InputRightElement width="4.5rem">
                   <Button
-                    colorScheme="teal"
                     variant="solid"
                     h="1.75rem"
                     size="sm"
@@ -118,7 +117,6 @@ export function AuthModal({ onClose }: AuthModalProps) {
             <Button
               isLoading={loading}
               onClick={() => handleLogin(email, password)}
-              colorScheme="teal"
               variant="solid"
             >
               Login

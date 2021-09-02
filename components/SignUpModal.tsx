@@ -91,7 +91,6 @@ export function SignUpModal({ onCloseSignUp }: SignUpModalProps) {
                 />
                 <InputRightElement width="4.5rem">
                   <Button
-                    colorScheme="teal"
                     variant="solid"
                     h="1.75rem"
                     size="sm"
@@ -111,7 +110,6 @@ export function SignUpModal({ onCloseSignUp }: SignUpModalProps) {
             <Button
               isLoading={loading}
               onClick={() => handleSignUp(email, password)}
-              colorScheme="teal"
               variant="solid"
             >
               Sign up
