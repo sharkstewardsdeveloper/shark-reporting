@@ -1,17 +1,11 @@
 import React, { useState } from "react";
 import { ArrowRightIcon, ArrowLeftIcon } from "@chakra-ui/icons";
-import {
-  Box,
-  Badge,
-  Text,
-  Button,
-  Image,
-  HStack,
-  Icon,
-} from "@chakra-ui/react";
+import { Box, Text, Button, HStack, Icon } from "@chakra-ui/react";
+import Image from "next/image";
 
 export default function Quiz({}) {
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [isCorrect, setIsCorrect] = useState(null);
 
   const nextQuestion = () => {
     setIsCorrect(null);
@@ -25,8 +19,6 @@ export default function Quiz({}) {
       setQuestionIndex(questionIndex - 1);
     }
   };
-
-  const [isCorrect, setIsCorrect] = useState(null);
 
   const checkAnswer = (answer) => {
     setIsCorrect(questions[questionIndex].answer === answer ? true : false);
@@ -91,11 +83,10 @@ export default function Quiz({}) {
       </HStack>
       <Box p="2">
         <Image
-          borderRadius="40px"
-          mt={2}
-          mb={4}
           src={questions[questionIndex].imageUrl}
           alt={questions[questionIndex].imageAlt}
+          width={500}
+          height={300}
         ></Image>
 
         <Text mt="1" fontWeight="bold" as="h4" lineHeight="tight">
