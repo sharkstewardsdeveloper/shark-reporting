@@ -123,30 +123,44 @@ export default function Report() {
       width="100%"
       height="100%"
     >
-      <VStack align="center" margin="auto" width="lg" height="100%">
-        <Box m={2} p={3}>
-          {errorMessage != null && (
-            <Alert status="error">
-              <AlertIcon />
-              {errorMessage}
-            </Alert>
-          )}
-          <Formik
-            initialValues={{
-              locationName: undefined,
-              email: undefined,
-              sightingTime: DateTime.now().toISO(),
-              authorName: undefined,
-              sharkType: undefined,
-            }}
-            validationSchema={reportFormSchema}
-            onSubmit={(values, actions) => {
-              actions.setSubmitting(true);
-              submitForm(values, actions);
-            }}
-          >
-            {(props) => (
-              <Form>
+      <VStack
+        align="center"
+        margin="auto"
+        spacing={4}
+        p={3}
+        width="lg"
+        height="100%"
+      >
+        {errorMessage != null && (
+          <Alert status="error">
+            <AlertIcon />
+            {errorMessage}
+          </Alert>
+        )}
+        <Formik
+          initialValues={{
+            locationName: undefined,
+            email: undefined,
+            sightingTime: DateTime.now().toISO(),
+            authorName: undefined,
+            sharkType: undefined,
+          }}
+          validationSchema={reportFormSchema}
+          onSubmit={(values, actions) => {
+            actions.setSubmitting(true);
+            submitForm(values, actions);
+          }}
+        >
+          {(props) => (
+            <Form>
+              <VStack
+                align="center"
+                margin="auto"
+                spacing={4}
+                p={3}
+                width="lg"
+                height="100%"
+              >
                 <Field name="locationName">
                   {({ field, form }) => (
                     <FormControl
@@ -203,14 +217,12 @@ export default function Report() {
                 <Field name="wasCaught">
                   {({ field, form }) => (
                     <FormControl isRequired marginTop={2}>
-                      <HStack spacing="24px">
-                        <Checkbox {...field} name="wasCaught" size="lg">
-                          <FormLabel marginTop={2}>
-                            I saw the shark get caught by a fisherman.
-                          </FormLabel>
-                        </Checkbox>
-                      </HStack>
-                      <FormHelperText>
+                      <Checkbox {...field} name="wasCaught" size="lg">
+                        <FormLabel marginTop={2}>
+                          I saw the shark get caught by a fisherman.
+                        </FormLabel>
+                      </Checkbox>
+                      <FormHelperText mt={0}>
                         Check this box if you saw the shark out of the water
                         after being removed by a human (even if it was later
                         returned safely).
@@ -222,7 +234,6 @@ export default function Report() {
                   name="wasReleased"
                   marginBottom={2}
                 />
-
                 <Field name="description">
                   {({ field, form }) => (
                     <FormControl
@@ -356,10 +367,10 @@ export default function Report() {
                     Submit
                   </Button>
                 )}
-              </Form>
-            )}
-          </Formik>
-        </Box>
+              </VStack>
+            </Form>
+          )}
+        </Formik>
       </VStack>
     </Flex>
   );
@@ -433,7 +444,7 @@ function SharkWasReleasedCheckboxField({
         </FormLabel>
       </Checkbox>
       {wasCaught && (
-        <FormHelperText>
+        <FormHelperText mt={0}>
           Check this box if you saw the fisherman who caught the shark(s) also
           release them safely back into the ocean.
         </FormHelperText>
