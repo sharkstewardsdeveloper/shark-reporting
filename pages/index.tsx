@@ -22,7 +22,9 @@ export default function Home() {
       <Text>Report shark sightings</Text>
 
       <Stack direction="row" spacing={4} m={3}>
-        <Button variant="solid">Educate</Button>
+        <Link href="/education">
+          <Button variant="solid">Educate</Button>
+        </Link>
         <Link href="/report">
           <Button variant="outline">Report</Button>
         </Link>
