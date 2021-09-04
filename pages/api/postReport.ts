@@ -1,62 +1,58 @@
-import { PostgrestError, User } from "@supabase/supabase-js";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { ValidationError } from "yup";
+import { FormSubmission, reportFormSchema } from "../../model/form_submission";
 import { supabase } from "../../utils/supabaseClient";
 
-export interface postReportResponse {
-  data?: Object;
-  error?: PostgrestError;
-}
+export type PostReportResponse =
+  | {
+      success: true;
+      submission: FormSubmission;
+    }
+  | {
+      success: false;
+      error: string;
+    };
 
 export default async function postReport(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<PostReportResponse>
 ) {
-  console.log(req.body);
-  const {
-    locationName,
-    sightingTime,
-    sharkType,
-    description,
-    email,
-    locationLong,
-    locationLat,
-    userId,
-    shouldSubscribe,
-    authorName,
-    confirmedGetAppUpdates,
-    wasCaught,
-    wasReleased,
-  } = req.body;
-
-  if (locationName == null || locationName === "") {
-    res.status(400).json({ error: "You must provide a location." });
-    return;
+  const authToken = req.headers.authorization;
+  let user_id: string | undefined;
+  if (authToken != null) {
+    supabase.auth.setAuth(authToken);
+    const { data, error } = await supabase.auth.api.getUser(authToken);
+    if (error) {
+      res.status(401).json({
+        success: false,
+        error: error.message,
+      });
+      return;
+    }
+    user_id = data.id;
   }
 
-  const { data, error } = await supabase.from("form_submissions").insert([
-    {
-      user_id: userId,
-      location_name: locationName,
-      sighting_time: sightingTime,
-      shark_type: sharkType,
-      description: description,
-      location_lat: locationLat,
-      location_long: locationLong,
-      email: email,
-      should_subscribe: shouldSubscribe ? shouldSubscribe : false,
-      author_name: authorName,
-      confirmed_get_app_updates: confirmedGetAppUpdates
-        ? confirmedGetAppUpdates
-        : false,
-      was_caught: wasCaught ? wasCaught : false,
-      was_released: wasCaught && wasReleased ? wasReleased : null,
-    },
-  ]);
-  if (error) {
-    console.log(error);
-    res.status(400).json({ error: error } as postReportResponse);
-    return;
-  } else {
-    res.status(200).json(data as postReportResponse);
+  try {
+    const validEntries = await reportFormSchema.validate({
+      ...req.body,
+      user_id,
+    });
+    const { data, error } = await supabase
+      .from("form_submissions")
+      .insert(validEntries);
+    if (error) {
+      console.error(error);
+      res.status(400).json({ success: false, error: error.message });
+      return;
+    } else {
+      res.status(201).json({ success: true, submission: data[0] });
+    }
+  } catch (e) {
+    let status = e instanceof ValidationError ? 422 : 400;
+    let error = "Something went wrong. Please try again.";
+    if (e.message != null) {
+      error = e.message;
+    }
+    res.status(status).json({ success: false, error });
   }
 }
