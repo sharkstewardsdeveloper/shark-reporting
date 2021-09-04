@@ -432,7 +432,7 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
     >
       <Checkbox {...field} size="lg" id={fieldName}>
         <FormLabel paddingTop={2} htmlFor={fieldName}>
-          Was the shark was safely released after being caught?
+          Was the shark safely released after being caught?
         </FormLabel>
       </Checkbox>
     </FormControl>
