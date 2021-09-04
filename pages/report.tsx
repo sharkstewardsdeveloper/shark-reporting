@@ -158,22 +158,7 @@ export default function Report() {
             <Form>
               {currentStep == FormStep.SightingDetails && (
                 <>
-                  <StringFormField
-                    fieldName="location_name"
-                    isRequired
-                    label="Where did you see the shark(s)?"
-                    placeholder={`Pier 39`}
-                    hint={
-                      <>
-                        Search for a location by typing above or select{" "}
-                        <strong>My Location.</strong>
-                      </>
-                    }
-                  >
-                    <Button variant="ghost" size="sm" padding="5">
-                      📍 My Location
-                    </Button>
-                  </StringFormField>
+                  <LocationField />
 
                   <SightingDateField name="sighting_time" />
 
@@ -310,6 +295,7 @@ interface StringFormFieldProps {
   label: string;
   placeholder: string;
   isRequired?: boolean;
+  isDisabled?: boolean;
   inputType?: "short_answer" | "email" | "long_answer";
   /** Additional helper text displayed below the text input. */
   hint?: React.ReactNode;
@@ -326,6 +312,7 @@ function StringFormField({
   hint,
   inputType = "short_answer",
   isRequired = false,
+  isDisabled,
   children,
 }: PropsWithChildren<StringFormFieldProps>) {
   const TextInputComponent = inputType === "long_answer" ? Textarea : Input;
@@ -342,6 +329,7 @@ function StringFormField({
                 {...field}
                 id={fieldName}
                 placeholder={placeholder}
+                isDisabled={isDisabled}
                 type={
                   inputType !== "short_answer" && inputType !== "long_answer"
                     ? inputType
@@ -436,5 +424,99 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
         </FormLabel>
       </Checkbox>
     </FormControl>
+  );
+}
+
+function LocationField() {
+  const isLocationApiAvailable = navigator?.geolocation != null;
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] =
+    React.useState(false);
+
+  const locationNameFieldKey = "location_name";
+
+  function handleSelectCurrentLocation() {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        formContext.setFieldValue(
+          locationNameFieldKey,
+          "Current Location",
+          true
+        );
+        formContext.setFieldValue(
+          "location_lat",
+          String(position.coords.latitude),
+          true
+        );
+        formContext.setFieldValue(
+          "location_long",
+          String(position.coords.longitude),
+          true
+        );
+        setIsUsingCurrentLocation(true);
+      },
+      (error) => {
+        // TODO: this error is not rendering as a form error
+        if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
+          formContext.setFieldError(
+            locationNameFieldKey,
+            "Please enable location permissions to use your current location. You can also search for a location instead."
+          );
+        } else {
+          formContext.setFieldError(
+            locationNameFieldKey,
+            "Your location could not be determined. Please search for a location instead."
+          );
+        }
+      },
+      { enableHighAccuracy: true }
+    );
+  }
+
+  return (
+    <StringFormField
+      fieldName={locationNameFieldKey}
+      isRequired
+      label="Where did you see the shark(s)?"
+      placeholder={`Pier 39`}
+      isDisabled={isUsingCurrentLocation}
+      hint={
+        <>
+          Search for a location by typing above
+          {isLocationApiAvailable && (
+            <>
+              {" "}
+              or choose <strong>My Location.</strong>
+            </>
+          )}
+        </>
+      }
+    >
+      {isLocationApiAvailable &&
+        (isUsingCurrentLocation ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            onClick={() => {
+              setIsUsingCurrentLocation(false);
+              formContext.setFieldValue(locationNameFieldKey, undefined, true);
+              formContext.setFieldValue("location_lat", undefined, false);
+              formContext.setFieldValue("location_long", undefined, false);
+            }}
+          >
+            Clear
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            onClick={handleSelectCurrentLocation}
+          >
+            📍 My Location
+          </Button>
+        ))}
+    </StringFormField>
   );
 }
