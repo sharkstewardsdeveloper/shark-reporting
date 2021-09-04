@@ -131,7 +131,9 @@ export default function Quiz({}) {
 
         <Box d="flex" mt="2" alignItems="center">
           <Box color="white" fontSize="sm">
-            <Text>{questions[questionIndex].fact}</Text>
+            {isCorrect === true || isCorrect === false ? (
+              <Text>{questions[questionIndex].fact}</Text>
+            ) : null}
           </Box>
         </Box>
       </Box>
