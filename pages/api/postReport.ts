@@ -1,10 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ValidationError } from "yup";
-import {
-  FormSubmission,
-  reportFormSchema,
-  UUID,
-} from "../../model/form_submission";
+import { FormSubmission, reportFormSchema } from "../../model/form_submission";
 import { supabase } from "../../utils/supabaseClient";
 
 export type PostReportResponse =

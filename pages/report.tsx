@@ -63,12 +63,10 @@ enum FormStep {
 function useInitialFormValues(): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
-    location_name: undefined,
     sighting_time: DateTime.now().toISO(),
     shark_type: SharkType.other,
     was_caught: false,
     was_released: false,
-    author_name: undefined,
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
@@ -240,7 +238,7 @@ export default function Report() {
                   mt={4}
                   mb={2}
                   width="100%"
-                  isDisabled={!props.touched || !props.isValid}
+                  isDisabled={!props.dirty || !props.isValid}
                   isLoading={props.isSubmitting || props.isValidating}
                   onClick={(event) => {
                     event.preventDefault();
@@ -259,7 +257,7 @@ export default function Report() {
                   mt={4}
                   mb={2}
                   width="100%"
-                  isDisabled={!props.touched || !props.isValid}
+                  isDisabled={!props.dirty || !props.isValid}
                   isLoading={props.isSubmitting || props.isValidating}
                   type={"submit"}
                 >
