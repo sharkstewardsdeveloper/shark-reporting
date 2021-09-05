@@ -433,11 +433,16 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
 
 function LocationField() {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
-  const isLocationApiAvailable = useIsGeolocationApiAvailable();
+  const toast = useToast();
 
+  const isLocationApiAvailable = useIsGeolocationApiAvailable();
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
   const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
     useState(false);
+  const [locationFetchErrorType, setLocationFetchErrorType] = useState<
+    "permission_denied" | "unable_to_resolve"
+  >();
+
   const locationNameFieldKey = "location_name";
 
   async function handleSelectCurrentLocation() {
@@ -459,21 +464,32 @@ function LocationField() {
       setIsUsingCurrentLocation(true);
     } catch (e: unknown) {
       const error = e as GeolocationPositionError;
-      // TODO: this error is not rendering as a form error
       if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
-        formContext.setFieldError(
-          locationNameFieldKey,
-          "Please enable location permissions to use your current location. You can also search for a location instead."
-        );
+        setLocationFetchErrorType("permission_denied");
+        toast({
+          status: "error",
+          title: "Access to your location has been blocked",
+          description:
+            "Enable location permissions and refresh the page to use your current location. You can also search for a location instead.",
+        });
       } else {
-        formContext.setFieldError(
-          locationNameFieldKey,
-          "Your location could not be determined. Please search for a location instead."
-        );
+        setLocationFetchErrorType("unable_to_resolve");
+        toast({
+          status: "error",
+          title: "Your location could not be determined",
+          description: "Please try again or search for a location instead.",
+        });
       }
     } finally {
       setIsFetchingCurrentLocation(false);
     }
+  }
+
+  function handleClearCurrentLocation() {
+    setIsUsingCurrentLocation(false);
+    formContext.setFieldValue(locationNameFieldKey, "", true);
+    formContext.setFieldValue("location_lat", undefined, false);
+    formContext.setFieldValue("location_long", undefined, false);
   }
 
   return (
@@ -503,12 +519,7 @@ function LocationField() {
             variant="ghost"
             size="sm"
             padding="5"
-            onClick={() => {
-              setIsUsingCurrentLocation(false);
-              formContext.setFieldValue(locationNameFieldKey, undefined, true);
-              formContext.setFieldValue("location_lat", undefined, false);
-              formContext.setFieldValue("location_long", undefined, false);
-            }}
+            onClick={handleClearCurrentLocation}
           >
             Clear
           </Button>
@@ -518,6 +529,7 @@ function LocationField() {
             size="sm"
             padding="5"
             isLoading={isFetchingCurrentLocation}
+            isDisabled={locationFetchErrorType === "permission_denied"}
             onClick={handleSelectCurrentLocation}
           >
             📍 My Location
