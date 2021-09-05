@@ -503,12 +503,15 @@ function LocationField() {
         isUsingCurrentLocation ? null : (
           <>
             Search for a location by typing above
-            {isLocationApiAvailable && (
-              <>
-                {" "}
-                or choose <strong>My Location.</strong>
-              </>
-            )}
+            {isLocationApiAvailable &&
+              (locationFetchErrorType === "permission_denied" ? (
+                "."
+              ) : (
+                <>
+                  {" "}
+                  or choose <strong>My Location.</strong>
+                </>
+              ))}
           </>
         )
       }
