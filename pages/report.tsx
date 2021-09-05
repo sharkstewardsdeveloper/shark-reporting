@@ -38,6 +38,10 @@ import {
   UnsubmittedFormResponse,
 } from "../model/form_submission";
 import { PostReportResponse } from "./api/postReport";
+import {
+  fetchCurrentLocation,
+  useIsGeolocationApiAvailable,
+} from "../utils/geolocationApi";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -158,22 +162,7 @@ export default function Report() {
             <Form>
               {currentStep == FormStep.SightingDetails && (
                 <>
-                  <StringFormField
-                    fieldName="location_name"
-                    isRequired
-                    label="Where did you see the shark(s)?"
-                    placeholder={`Pier 39`}
-                    hint={
-                      <>
-                        Search for a location by typing above or select{" "}
-                        <strong>My Location.</strong>
-                      </>
-                    }
-                  >
-                    <Button variant="ghost" size="sm" padding="5">
-                      📍 My Location
-                    </Button>
-                  </StringFormField>
+                  <LocationField />
 
                   <SightingDateField name="sighting_time" />
 
@@ -310,6 +299,7 @@ interface StringFormFieldProps {
   label: string;
   placeholder: string;
   isRequired?: boolean;
+  isDisabled?: boolean;
   inputType?: "short_answer" | "email" | "long_answer";
   /** Additional helper text displayed below the text input. */
   hint?: React.ReactNode;
@@ -326,6 +316,7 @@ function StringFormField({
   hint,
   inputType = "short_answer",
   isRequired = false,
+  isDisabled,
   children,
 }: PropsWithChildren<StringFormFieldProps>) {
   const TextInputComponent = inputType === "long_answer" ? Textarea : Input;
@@ -342,6 +333,7 @@ function StringFormField({
                 {...field}
                 id={fieldName}
                 placeholder={placeholder}
+                isDisabled={isDisabled}
                 type={
                   inputType !== "short_answer" && inputType !== "long_answer"
                     ? inputType
@@ -436,5 +428,116 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
         </FormLabel>
       </Checkbox>
     </FormControl>
+  );
+}
+
+function LocationField() {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const toast = useToast();
+
+  const isLocationApiAvailable = useIsGeolocationApiAvailable();
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
+  const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
+    useState(false);
+  const [locationFetchErrorType, setLocationFetchErrorType] = useState<
+    "permission_denied" | "unable_to_resolve"
+  >();
+
+  const locationNameFieldKey = "location_name";
+
+  async function handleSelectCurrentLocation() {
+    setIsFetchingCurrentLocation(true);
+
+    try {
+      const { coords } = await fetchCurrentLocation(true);
+      formContext.setFieldValue(
+        locationNameFieldKey,
+        "📍 Current Location",
+        true
+      );
+      formContext.setFieldValue("location_lat", String(coords.latitude), true);
+      formContext.setFieldValue(
+        "location_long",
+        String(coords.longitude),
+        true
+      );
+      setIsUsingCurrentLocation(true);
+    } catch (e: unknown) {
+      const error = e as GeolocationPositionError;
+      if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
+        setLocationFetchErrorType("permission_denied");
+        toast({
+          status: "error",
+          title: "Access to your location has been blocked",
+          description:
+            "Enable location permissions and refresh the page to use your current location. You can also search for a location instead.",
+        });
+      } else {
+        setLocationFetchErrorType("unable_to_resolve");
+        toast({
+          status: "error",
+          title: "Your location could not be determined",
+          description: "Please try again or search for a location instead.",
+        });
+      }
+    } finally {
+      setIsFetchingCurrentLocation(false);
+    }
+  }
+
+  function handleClearCurrentLocation() {
+    setIsUsingCurrentLocation(false);
+    formContext.setFieldValue(locationNameFieldKey, "", true);
+    formContext.setFieldValue("location_lat", undefined, false);
+    formContext.setFieldValue("location_long", undefined, false);
+  }
+
+  return (
+    <StringFormField
+      fieldName={locationNameFieldKey}
+      isRequired
+      label="Where did you see the shark(s)?"
+      placeholder={`Pier 39`}
+      isDisabled={isUsingCurrentLocation}
+      hint={
+        isUsingCurrentLocation ? null : (
+          <>
+            Search for a location by typing above
+            {isLocationApiAvailable &&
+              (locationFetchErrorType === "permission_denied" ? (
+                "."
+              ) : (
+                <>
+                  {" "}
+                  or choose <strong>My Location.</strong>
+                </>
+              ))}
+          </>
+        )
+      }
+    >
+      {isLocationApiAvailable &&
+        (isUsingCurrentLocation ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            onClick={handleClearCurrentLocation}
+          >
+            Clear
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            isLoading={isFetchingCurrentLocation}
+            isDisabled={locationFetchErrorType === "permission_denied"}
+            onClick={handleSelectCurrentLocation}
+          >
+            📍 My Location
+          </Button>
+        ))}
+    </StringFormField>
   );
 }
