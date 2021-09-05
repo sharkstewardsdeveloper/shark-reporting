@@ -42,6 +42,7 @@ import {
   fetchCurrentLocation,
   useIsGeolocationApiAvailable,
 } from "../utils/geolocationApi";
+import Head from "next/head";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -85,6 +86,9 @@ export default function Report() {
 
   return (
     <Container>
+      <Head>
+        <title>Report a Shark Sighting · Shark Stewards</title>
+      </Head>
       <VStack marginBottom="8">
         <Alert status="info" colorScheme="gray">
           <AlertIcon />
