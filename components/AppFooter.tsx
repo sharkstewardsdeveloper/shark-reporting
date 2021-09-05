@@ -99,7 +99,9 @@ export function AppFooter() {
           justify={{ md: "space-between" }}
           align={{ md: "center" }}
         >
-          <Text>© 2021 Shark Stewards. All rights reserved</Text>
+          <Text>
+            © 2021 <strong>Shark Stewards</strong>
+          </Text>
           <Stack direction={"row"} spacing={6}>
             {/* <SocialButton label={"Twitter"} href={"#"}>
               <FaTwitter />

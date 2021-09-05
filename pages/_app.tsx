@@ -29,7 +29,7 @@ export default function MyApp({ Component, pageProps }) {
     <Authentication>
       <ChakraProvider theme={theme}>
         <Head>
-          <title>Shark Reporting by Shark Stewards</title>
+          <title>Shark Reporter · Shark Stewards</title>
         </Head>
         <Grid templateRows="min-content 1fr auto" height="100vh">
           <AppHeader />

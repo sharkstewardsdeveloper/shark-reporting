@@ -42,6 +42,7 @@ import {
   fetchCurrentLocation,
   useIsGeolocationApiAvailable,
 } from "../utils/geolocationApi";
+import Head from "next/head";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -78,11 +79,149 @@ function useInitialFormValues(): UnsubmittedFormResponse {
 }
 
 export default function Report() {
-  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
-  const router = useRouter();
   const { session } = useSessionUser();
   const defaultFormFormValues = useInitialFormValues();
+  const submitForm = useSubmitSharkSightingForm();
+
+  return (
+    <Container>
+      <Head>
+        <title>Report a Shark Sighting · Shark Stewards</title>
+      </Head>
+      <VStack marginBottom="8">
+        <Alert status="info" colorScheme="gray">
+          <AlertIcon />
+          Fill out the information below to report what you have seen. This data
+          is used for ocean conservation research purposes only.
+        </Alert>
+        <Formik
+          initialValues={defaultFormFormValues}
+          validationSchema={reportFormSchema}
+          onSubmit={(values, actions) => {
+            actions.setSubmitting(true);
+            submitForm(values, actions);
+          }}
+        >
+          {(props) => (
+            <Form>
+              {currentStep == FormStep.SightingDetails && (
+                <>
+                  <LocationField />
+
+                  <SightingDateField name="sighting_time" />
+
+                  <StringFormField
+                    fieldName="shark_type"
+                    isRequired
+                    label="What kind of shark did you see?"
+                    placeholder="Type of Shark"
+                  />
+
+                  <Box marginTop="8" marginBottom="8">
+                    <CheckboxFormField
+                      fieldName="was_caught"
+                      label="I saw the shark get caught by a fisherman."
+                      hint="Check this box if you saw the shark out of the water after being removed by a human (even if it was later returned safely)."
+                    />
+                    <SharkWasReleasedCheckboxField name="was_released" />
+                  </Box>
+
+                  <StringFormField
+                    fieldName="description"
+                    label="Is there other information you'd like provide?"
+                    placeholder="Details..."
+                    hint="Helpful details: How many sharks were there? Were they harmed by other people?"
+                    inputType="long_answer"
+                  />
+                </>
+              )}
+
+              {currentStep === FormStep.AuthorInfo && (
+                <Box marginTop="4" marginBottom="4">
+                  <Heading size="sm">
+                    Can we contact you about your report or other shark
+                    preservation efforts? Your information will never be given
+                    to a third party.
+                  </Heading>
+                  <Divider marginTop="2" marginBottom="3" />
+                  <StringFormField
+                    fieldName="author_name"
+                    label="Your Name (optional)"
+                    placeholder="Shark Friend"
+                  />
+                  <StringFormField
+                    fieldName="email"
+                    label="Your Email Address (optional)"
+                    placeholder="shark.helper@example.com"
+                    inputType="email"
+                  />
+                  <CheckboxFormField
+                    fieldName="should_subscribe"
+                    label="Subscribe to Shark Stewards updates"
+                  />
+                  <CheckboxFormField
+                    fieldName="confirmed_get_app_updates"
+                    label="I'd like to be notified when we improve this site"
+                  />
+                </Box>
+              )}
+              {session == null && currentStep === FormStep.SightingDetails ? (
+                <Button
+                  mt={4}
+                  mb={2}
+                  width="100%"
+                  isDisabled={!props.dirty || !props.isValid}
+                  isLoading={props.isSubmitting || props.isValidating}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (
+                      currentStep === FormStep.SightingDetails &&
+                      session == null
+                    ) {
+                      setCurrentStep(FormStep.AuthorInfo);
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  mt={4}
+                  mb={2}
+                  width="100%"
+                  isDisabled={!props.dirty || !props.isValid}
+                  isLoading={props.isSubmitting || props.isValidating}
+                  type={"submit"}
+                >
+                  Submit
+                </Button>
+              )}
+              {session == null && currentStep === FormStep.AuthorInfo && (
+                <Button
+                  mb={2}
+                  width="100%"
+                  variant="ghost"
+                  isDisabled={props.isSubmitting || props.isValidating}
+                  onClick={() => {
+                    setCurrentStep(FormStep.SightingDetails);
+                  }}
+                >
+                  Previous
+                </Button>
+              )}
+            </Form>
+          )}
+        </Formik>
+      </VStack>
+    </Container>
+  );
+}
+
+function useSubmitSharkSightingForm() {
+  const toast = useToast();
+  const router = useRouter();
+  const { session } = useSessionUser();
 
   async function submitForm<FormValuesType>(
     values: FormValuesType,
@@ -142,123 +281,7 @@ export default function Report() {
     }
   }
 
-  return (
-    <Container>
-      <VStack marginBottom="8">
-        <Alert status="info" colorScheme="gray">
-          <AlertIcon />
-          Fill out the information below to report what you have seen. This data
-          is used for ocean conservation research purposes only.
-        </Alert>
-        <Formik
-          initialValues={defaultFormFormValues}
-          validationSchema={reportFormSchema}
-          onSubmit={(values, actions) => {
-            actions.setSubmitting(true);
-            submitForm(values, actions);
-          }}
-        >
-          {(props) => (
-            <Form>
-              {currentStep == FormStep.SightingDetails && (
-                <>
-                  <LocationField />
-
-                  <SightingDateField name="sighting_time" />
-
-                  <StringFormField
-                    fieldName="shark_type"
-                    isRequired
-                    label="What kind of shark did you see?"
-                    placeholder="Type of Shark"
-                  />
-
-                  <Box marginTop="8" marginBottom="8">
-                    <CheckboxFormField
-                      fieldName="was_caught"
-                      label="I saw the shark get caught by a fisherman."
-                      hint="Check this box if you saw the shark out of the water after being removed by a human (even if it was later returned safely)."
-                    />
-                    <SharkWasReleasedCheckboxField name="was_released" />
-                  </Box>
-
-                  <StringFormField
-                    fieldName="description"
-                    label="Is there other information you'd like provide?"
-                    placeholder="Details..."
-                    hint="The more accurate our data, the more of an impact you can make!"
-                    inputType="long_answer"
-                  />
-                </>
-              )}
-
-              {currentStep === FormStep.AuthorInfo && (
-                <Box marginTop="4" marginBottom="4">
-                  <Heading size="sm">
-                    Can we contact you about your report or other shark
-                    preservation efforts? Your information will never be given
-                    to a third party.
-                  </Heading>
-                  <Divider marginTop="2" marginBottom="3" />
-                  <StringFormField
-                    fieldName="author_name"
-                    label="Your Name (optional)"
-                    placeholder="Shark Friend"
-                  />
-                  <StringFormField
-                    fieldName="email"
-                    label="Your Email Address (optional)"
-                    placeholder="shark.helper@example.com"
-                    inputType="email"
-                  />
-                  <CheckboxFormField
-                    fieldName="should_subscribe"
-                    label="Subscribe to Shark Stewards updates"
-                  />
-
-                  <CheckboxFormField
-                    fieldName="confirmed_get_app_updates"
-                    label="I'd like to be notified when we improve this site"
-                  />
-                </Box>
-              )}
-              {session == null && currentStep === FormStep.SightingDetails ? (
-                <Button
-                  mt={4}
-                  mb={2}
-                  width="100%"
-                  isDisabled={!props.dirty || !props.isValid}
-                  isLoading={props.isSubmitting || props.isValidating}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    if (
-                      currentStep === FormStep.SightingDetails &&
-                      session == null
-                    ) {
-                      setCurrentStep(FormStep.AuthorInfo);
-                    }
-                  }}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  mt={4}
-                  mb={2}
-                  width="100%"
-                  isDisabled={!props.dirty || !props.isValid}
-                  isLoading={props.isSubmitting || props.isValidating}
-                  type={"submit"}
-                >
-                  Submit
-                </Button>
-              )}
-            </Form>
-          )}
-        </Formik>
-      </VStack>
-    </Container>
-  );
+  return submitForm;
 }
 
 function SightingDateField(props: FieldConfig) {
