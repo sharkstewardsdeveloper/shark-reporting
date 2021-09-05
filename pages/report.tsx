@@ -197,6 +197,19 @@ export default function Report() {
                   Submit
                 </Button>
               )}
+              {session == null && currentStep === FormStep.AuthorInfo && (
+                <Button
+                  mb={2}
+                  width="100%"
+                  variant="ghost"
+                  isDisabled={props.isSubmitting || props.isValidating}
+                  onClick={() => {
+                    setCurrentStep(FormStep.SightingDetails);
+                  }}
+                >
+                  Previous
+                </Button>
+              )}
             </Form>
           )}
         </Formik>
