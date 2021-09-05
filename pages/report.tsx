@@ -78,69 +78,10 @@ function useInitialFormValues(): UnsubmittedFormResponse {
 }
 
 export default function Report() {
-  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
-  const router = useRouter();
   const { session } = useSessionUser();
   const defaultFormFormValues = useInitialFormValues();
-
-  async function submitForm<FormValuesType>(
-    values: FormValuesType,
-    actions: FormikHelpers<FormValuesType>
-  ) {
-    try {
-      const data = await fetch("/api/postReport", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(session == null ? {} : { Authorization: session.accessToken }),
-        },
-        body: JSON.stringify(values),
-      });
-      const response: PostReportResponse = await data.json();
-      // `=== true` narrows the type in the else-case
-      if (response.success === true) {
-        toast({
-          title: "Report submitted successfully! Finishing up...",
-          status: "success",
-        });
-        router.push("/confirmReport");
-        return;
-      }
-
-      if (data.status === 422) {
-        toast({
-          title: "Check the form for errors",
-          description: response.error,
-          status: "error",
-          isClosable: true,
-        });
-      } else if (data.status === 401) {
-        toast({
-          title: "Your session has expired",
-          description: "Please log in again to continue.",
-          status: "error",
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: "Something went wrong",
-          description: "Please check your connection and try again.",
-          status: "error",
-          isClosable: true,
-        });
-      }
-    } catch (error: unknown) {
-      toast({
-        title: "Something went wrong",
-        description: "Please check your connection and try again.",
-        status: "error",
-        isClosable: true,
-      });
-    } finally {
-      actions.setSubmitting(false);
-    }
-  }
+  const submitForm = useSubmitSharkSightingForm();
 
   return (
     <Container>
@@ -259,6 +200,72 @@ export default function Report() {
       </VStack>
     </Container>
   );
+}
+
+function useSubmitSharkSightingForm() {
+  const toast = useToast();
+  const router = useRouter();
+  const { session } = useSessionUser();
+
+  async function submitForm<FormValuesType>(
+    values: FormValuesType,
+    actions: FormikHelpers<FormValuesType>
+  ) {
+    try {
+      const data = await fetch("/api/postReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session == null ? {} : { Authorization: session.accessToken }),
+        },
+        body: JSON.stringify(values),
+      });
+      const response: PostReportResponse = await data.json();
+      // `=== true` narrows the type in the else-case
+      if (response.success === true) {
+        toast({
+          title: "Report submitted successfully! Finishing up...",
+          status: "success",
+        });
+        router.push("/confirmReport");
+        return;
+      }
+
+      if (data.status === 422) {
+        toast({
+          title: "Check the form for errors",
+          description: response.error,
+          status: "error",
+          isClosable: true,
+        });
+      } else if (data.status === 401) {
+        toast({
+          title: "Your session has expired",
+          description: "Please log in again to continue.",
+          status: "error",
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Something went wrong",
+          description: "Please check your connection and try again.",
+          status: "error",
+          isClosable: true,
+        });
+      }
+    } catch (error: unknown) {
+      toast({
+        title: "Something went wrong",
+        description: "Please check your connection and try again.",
+        status: "error",
+        isClosable: true,
+      });
+    } finally {
+      actions.setSubmitting(false);
+    }
+  }
+
+  return submitForm;
 }
 
 function SightingDateField(props: FieldConfig) {
