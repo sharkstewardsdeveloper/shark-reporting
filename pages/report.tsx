@@ -131,7 +131,7 @@ export default function Report() {
                     fieldName="description"
                     label="Is there other information you'd like provide?"
                     placeholder="Details..."
-                    hint="The more accurate our data, the more of an impact you can make!"
+                    hint="Helpful details: How many sharks were there? Were they harmed by other people?"
                     inputType="long_answer"
                   />
                 </>
@@ -160,7 +160,6 @@ export default function Report() {
                     fieldName="should_subscribe"
                     label="Subscribe to Shark Stewards updates"
                   />
-
                   <CheckboxFormField
                     fieldName="confirmed_get_app_updates"
                     label="I'd like to be notified when we improve this site"
