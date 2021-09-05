@@ -38,6 +38,10 @@ import {
   UnsubmittedFormResponse,
 } from "../model/form_submission";
 import { PostReportResponse } from "./api/postReport";
+import {
+  fetchCurrentLocation,
+  useIsGeolocationApiAvailable,
+} from "../utils/geolocationApi";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -428,49 +432,48 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
 }
 
 function LocationField() {
-  const isLocationApiAvailable = navigator?.geolocation != null;
   const formContext = useFormikContext<UnsubmittedFormResponse>();
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] =
-    React.useState(false);
+  const isLocationApiAvailable = useIsGeolocationApiAvailable();
 
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
+  const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
+    useState(false);
   const locationNameFieldKey = "location_name";
 
-  function handleSelectCurrentLocation() {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        formContext.setFieldValue(
+  async function handleSelectCurrentLocation() {
+    setIsFetchingCurrentLocation(true);
+
+    try {
+      const { coords } = await fetchCurrentLocation(true);
+      formContext.setFieldValue(
+        locationNameFieldKey,
+        "📍 Current Location",
+        true
+      );
+      formContext.setFieldValue("location_lat", String(coords.latitude), true);
+      formContext.setFieldValue(
+        "location_long",
+        String(coords.longitude),
+        true
+      );
+      setIsUsingCurrentLocation(true);
+    } catch (e: unknown) {
+      const error = e as GeolocationPositionError;
+      // TODO: this error is not rendering as a form error
+      if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
+        formContext.setFieldError(
           locationNameFieldKey,
-          "Current Location",
-          true
+          "Please enable location permissions to use your current location. You can also search for a location instead."
         );
-        formContext.setFieldValue(
-          "location_lat",
-          String(position.coords.latitude),
-          true
+      } else {
+        formContext.setFieldError(
+          locationNameFieldKey,
+          "Your location could not be determined. Please search for a location instead."
         );
-        formContext.setFieldValue(
-          "location_long",
-          String(position.coords.longitude),
-          true
-        );
-        setIsUsingCurrentLocation(true);
-      },
-      (error) => {
-        // TODO: this error is not rendering as a form error
-        if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
-          formContext.setFieldError(
-            locationNameFieldKey,
-            "Please enable location permissions to use your current location. You can also search for a location instead."
-          );
-        } else {
-          formContext.setFieldError(
-            locationNameFieldKey,
-            "Your location could not be determined. Please search for a location instead."
-          );
-        }
-      },
-      { enableHighAccuracy: true }
-    );
+      }
+    } finally {
+      setIsFetchingCurrentLocation(false);
+    }
   }
 
   return (
@@ -481,15 +484,17 @@ function LocationField() {
       placeholder={`Pier 39`}
       isDisabled={isUsingCurrentLocation}
       hint={
-        <>
-          Search for a location by typing above
-          {isLocationApiAvailable && (
-            <>
-              {" "}
-              or choose <strong>My Location.</strong>
-            </>
-          )}
-        </>
+        isUsingCurrentLocation ? null : (
+          <>
+            Search for a location by typing above
+            {isLocationApiAvailable && (
+              <>
+                {" "}
+                or choose <strong>My Location.</strong>
+              </>
+            )}
+          </>
+        )
       }
     >
       {isLocationApiAvailable &&
@@ -512,6 +517,7 @@ function LocationField() {
             variant="ghost"
             size="sm"
             padding="5"
+            isLoading={isFetchingCurrentLocation}
             onClick={handleSelectCurrentLocation}
           >
             📍 My Location
