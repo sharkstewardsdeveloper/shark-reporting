@@ -558,57 +558,15 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
 
 function LocationField() {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
-  const toast = useToast();
+  const locationNameFieldKey = "location_name";
 
   const isLocationApiAvailable = useIsGeolocationApiAvailable();
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
-  const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
-    useState(false);
-  const [locationFetchErrorType, setLocationFetchErrorType] = useState<
-    "permission_denied" | "unable_to_resolve"
-  >();
-
-  const locationNameFieldKey = "location_name";
-
-  async function handleSelectCurrentLocation() {
-    setIsFetchingCurrentLocation(true);
-
-    try {
-      const { coords } = await fetchCurrentLocation(true);
-      formContext.setFieldValue(
-        locationNameFieldKey,
-        "📍 Current Location",
-        true
-      );
-      formContext.setFieldValue("location_lat", String(coords.latitude), true);
-      formContext.setFieldValue(
-        "location_long",
-        String(coords.longitude),
-        true
-      );
-      setIsUsingCurrentLocation(true);
-    } catch (e: unknown) {
-      const error = e as GeolocationPositionError;
-      if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
-        setLocationFetchErrorType("permission_denied");
-        toast({
-          status: "error",
-          title: "Access to your location has been blocked",
-          description:
-            "Enable location permissions and refresh the page to use your current location. You can also search for a location instead.",
-        });
-      } else {
-        setLocationFetchErrorType("unable_to_resolve");
-        toast({
-          status: "error",
-          title: "Your location could not be determined",
-          description: "Please try again or search for a location instead.",
-        });
-      }
-    } finally {
-      setIsFetchingCurrentLocation(false);
-    }
-  }
+  const {
+    isFetchingCurrentLocation,
+    locationFetchErrorType,
+    handleSelectCurrentLocation,
+  } = useSelectCurrentLocation(locationNameFieldKey, setIsUsingCurrentLocation);
 
   function handleClearCurrentLocation() {
     setIsUsingCurrentLocation(false);
@@ -665,4 +623,71 @@ function LocationField() {
         ))}
     </StringFormField>
   );
+}
+
+function useSelectCurrentLocation(
+  locationNameFieldKey: Extract<keyof UnsubmittedFormResponse, "location_name">,
+  setIsUsingCurrentLocation: (isUsingCurrentLocation: boolean) => void
+) {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const toast = useToast();
+
+  const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
+    useState(false);
+  const [locationFetchErrorType, setLocationFetchErrorType] = useState<
+    "permission_denied" | "unable_to_resolve"
+  >();
+
+  const handleSelectCurrentLocation = React.useCallback(async () => {
+    setIsFetchingCurrentLocation(true);
+
+    try {
+      const { coords } = await fetchCurrentLocation(true);
+      formContext.setFieldValue(
+        locationNameFieldKey,
+        "📍 Current Location",
+        true
+      );
+      formContext.setFieldValue("location_lat", String(coords.latitude), true);
+      formContext.setFieldValue(
+        "location_long",
+        String(coords.longitude),
+        true
+      );
+      setIsUsingCurrentLocation(true);
+    } catch (e: unknown) {
+      const error = e as GeolocationPositionError;
+      if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
+        setLocationFetchErrorType("permission_denied");
+        toast({
+          status: "error",
+          title: "Access to your location has been blocked",
+          description:
+            "Enable location permissions and refresh the page to use your current location. You can also search for a location instead.",
+        });
+      } else {
+        setLocationFetchErrorType("unable_to_resolve");
+        toast({
+          status: "error",
+          title: "Your location could not be determined",
+          description: "Please try again or search for a location instead.",
+        });
+      }
+    } finally {
+      setIsFetchingCurrentLocation(false);
+    }
+  }, [
+    locationNameFieldKey,
+    formContext,
+    toast,
+    setIsFetchingCurrentLocation,
+    setLocationFetchErrorType,
+    setIsUsingCurrentLocation,
+  ]);
+
+  return {
+    isFetchingCurrentLocation,
+    locationFetchErrorType,
+    handleSelectCurrentLocation,
+  };
 }
