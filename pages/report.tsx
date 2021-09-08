@@ -4,38 +4,38 @@ import {
   AlertIcon,
   Box,
   Button,
-  Input,
   Checkbox,
-  HStack,
-  Textarea,
-  VStack,
+  Container,
+  Divider,
   FormControl,
-  FormLabel,
   FormErrorMessage,
   FormHelperText,
-  Container,
-  useToast,
+  FormLabel,
+  HStack,
   Heading,
-  Divider,
+  Input,
+  Textarea,
+  VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import {
-  Formik,
   Field,
-  Form,
-  FormikHelpers,
-  useFormikContext,
-  useField,
   FieldConfig,
   FieldProps,
+  Form,
+  Formik,
+  FormikHelpers,
+  useField,
+  useFormikContext,
 } from "formik";
 import { useSessionUser } from "../session/useSessionUser";
 import { DateTime } from "luxon";
 import { DatePicker } from "../components/DatePicker";
 import {
-  reportFormSchema,
   SharkType,
   UnsubmittedFormResponse,
+  reportFormSchema,
 } from "../model/form_submission";
 import { PostReportResponse } from "./api/postReport";
 import {

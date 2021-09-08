@@ -1,5 +1,5 @@
 import { User } from "@supabase/supabase-js";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GetProfileResponse } from "../pages/api/getProfile";
 import { Session } from "../session/session";
 

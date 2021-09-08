@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Flex, VStack } from "@chakra-ui/react";
 import Quiz from "../components/Quiz";
 
