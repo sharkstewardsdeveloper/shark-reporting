@@ -6,7 +6,6 @@ import { supabase } from "../../utils/supabaseClient";
 export type PostReportResponse =
   | {
       success: true;
-      submission: FormSubmission;
     }
   | {
       success: false;
@@ -39,15 +38,16 @@ export default async function postReport(
     });
     const { data, error } = await supabase
       .from("form_submissions")
-      .insert(validEntries);
+      .insert(validEntries, { returning: "minimal" });
     if (error) {
       console.error(error);
       res.status(400).json({ success: false, error: error.message });
       return;
     } else {
-      res.status(201).json({ success: true, submission: data[0] });
+      res.status(201).json({ success: true });
     }
   } catch (e) {
+    console.error(e);
     let status = e instanceof ValidationError ? 422 : 400;
     let error = "Something went wrong. Please try again.";
     if (e.message != null) {
