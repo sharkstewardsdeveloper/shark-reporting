@@ -4,6 +4,7 @@ import {
   SessionUserContext,
   SessionUserContextValue,
 } from "../session/useSessionUser";
+import { supabase } from "../utils/supabaseClient";
 
 interface AuthenticationProps {
   children: React.ReactNode;
@@ -11,6 +12,12 @@ interface AuthenticationProps {
 
 export function Authentication({ children }: AuthenticationProps) {
   const [session, setSession] = React.useState<Session>(null);
+  React.useEffect(() => {
+    const existingSession = supabase.auth.session();
+    if (existingSession != null) {
+      setSession(existingSession);
+    }
+  }, [setSession]);
 
   function login(session: Session) {
     setSession(session);
