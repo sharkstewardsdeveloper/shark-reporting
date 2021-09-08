@@ -4,6 +4,9 @@ import * as Yup from "yup";
 
 export type UUID = typeof uuidv4;
 
+// TODO: When supabase releases type generation, use it instead of this
+// hand-copied type https://supabase.io/docs/reference/javascript/generating-types
+
 /** A persisted record of a form submission fetched from the DB. */
 export interface FormSubmission {
   id: UUID;

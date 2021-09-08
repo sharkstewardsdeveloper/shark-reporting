@@ -1,10 +1,5 @@
-export interface Session {
-  accessToken: string;
-  refreshToken?: string;
-  user: User;
-}
+import { Session as SupabaseSession } from "@supabase/gotrue-js";
 
-export interface User {
-  email: string;
-  name?: string;
-}
+export type Session = SupabaseSession;
+
+export type User = Pick<SupabaseSession, "user">;

@@ -232,7 +232,7 @@ function useSubmitSharkSightingForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(session == null ? {} : { Authorization: session.accessToken }),
+          ...(session == null ? {} : { Authorization: session.access_token }),
         },
         body: JSON.stringify(values),
       });

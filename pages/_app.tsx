@@ -82,7 +82,7 @@ function AppHeader() {
                 <MenuItem>My Sightings</MenuItem>
                 <MenuGroup>
                   <MenuItem>Profile</MenuItem>
-                  <MenuItem onClick={logout}>Logout</MenuItem>
+                  <MenuItem onClick={logout}>Sign Out</MenuItem>
                 </MenuGroup>
               </>
             )}

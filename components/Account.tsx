@@ -28,7 +28,7 @@ export function Account({ session }: AccountProps) {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
-          Authorization: session.accessToken,
+          Authorization: session.access_token,
         },
       }).then((res) => res.json());
 
