@@ -36,8 +36,8 @@ export default async function postReport(
       ...req.body,
       user_id,
     });
-    const { data, error } = await supabase
-      .from("form_submissions")
+    const { error } = await supabase
+      .from<FormSubmission>("form_submissions")
       .insert(validEntries, { returning: "minimal" });
     if (error) {
       console.error(error);
