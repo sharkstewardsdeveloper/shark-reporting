@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { ArrowRightIcon, ArrowLeftIcon } from "@chakra-ui/icons";
-import { Box, Text, Button, HStack, Icon } from "@chakra-ui/react";
+import { ArrowLeftIcon, ArrowRightIcon } from "@chakra-ui/icons";
+import { Box, Button, HStack, Icon, Text } from "@chakra-ui/react";
 import Image from "next/image";
 
 export default function Quiz({}) {
