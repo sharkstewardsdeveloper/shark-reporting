@@ -1,10 +1,7 @@
 import { useToast } from "@chakra-ui/toast";
 import * as React from "react";
 import { Session } from "../session/session";
-import {
-  SessionUserContext,
-  SessionUserContextValue,
-} from "../session/useSessionUser";
+import { SessionUserContext } from "../session/useSessionUser";
 import { supabase } from "../utils/supabaseClient";
 
 interface AuthenticationProps {

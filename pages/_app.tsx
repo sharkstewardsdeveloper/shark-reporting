@@ -13,7 +13,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Text,
   useDisclosure,
   MenuGroup,
 } from "@chakra-ui/react";

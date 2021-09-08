@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Container,
-  Heading,
-  Flex,
-  Text,
-  Button,
-  Link,
-  Stack,
-} from "@chakra-ui/react";
+import { Heading, Flex, Text, Button, Link, Stack } from "@chakra-ui/react";
 
 export default function Home() {
   return (
