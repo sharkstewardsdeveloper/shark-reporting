@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, { PropsWithChildren, useEffect, useState } from "react";
 import {
   Alert,
   AlertIcon,
@@ -11,9 +11,10 @@ import {
   FormErrorMessage,
   FormHelperText,
   FormLabel,
-  HStack,
   Heading,
   Input,
+  InputGroup,
+  Spinner,
   Textarea,
   VStack,
   useToast,
@@ -45,6 +46,11 @@ import {
 import Head from "next/head";
 import { supabase } from "../utils/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
+import usePlacesAutocomplete from "use-places-autocomplete";
+import {
+  Status as GoogleMapsLoadStatus,
+  Wrapper as GoogleMapsLoader,
+} from "@googlemaps/react-wrapper";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -453,7 +459,7 @@ function StringFormField({
       <Field name={fieldName}>
         {({ field, form }: FieldProps<string, UnsubmittedFormResponse>) => (
           <>
-            <HStack>
+            <InputGroup>
               <TextInputComponent
                 {...field}
                 id={fieldName}
@@ -466,7 +472,7 @@ function StringFormField({
                 }
               />
               {children}
-            </HStack>
+            </InputGroup>
             {hint && <FormHelperText>{hint}</FormHelperText>}
             {form.errors[fieldName] != null && form.touched[fieldName] ? (
               <FormErrorMessage>{form.errors[fieldName]}</FormErrorMessage>
@@ -557,6 +563,56 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
 }
 
 function LocationField() {
+  const renderNonSuccessfulStatuses = (status: GoogleMapsLoadStatus) => {
+    if (status === GoogleMapsLoadStatus.LOADING) {
+      return <Spinner />;
+    } else if (status === GoogleMapsLoadStatus.FAILURE) {
+      return <ManualLocationField isSearchEnabled={false} />;
+    } else {
+      return null;
+    }
+  };
+
+  return (
+    <GoogleMapsLoader
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+      render={renderNonSuccessfulStatuses}
+      libraries={["places"]}
+    >
+      <AutocompleteLocationField />
+    </GoogleMapsLoader>
+  );
+}
+
+function AutocompleteLocationField() {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const {
+    ready: isAutocompleteReady,
+    suggestions,
+    setValue,
+    clearSuggestions,
+  } = usePlacesAutocomplete({
+    // callbackName: "__googleMapsCallback",
+    // requestOptions: {
+    //   location: {
+    //     lat: 37.653534,
+    //     lng: -122.170185,
+    //   },
+    // },
+  });
+  useEffect(() => {
+    setValue(formContext.values.location_name ?? "");
+  }, [formContext.values.location_name, setValue]);
+
+  console.log(suggestions);
+  return <ManualLocationField isSearchEnabled={isAutocompleteReady} />;
+}
+
+function ManualLocationField({
+  isSearchEnabled,
+}: {
+  isSearchEnabled: boolean;
+}) {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
   const locationNameFieldKey = "location_name";
 
@@ -575,6 +631,29 @@ function LocationField() {
     formContext.setFieldValue("location_long", undefined, false);
   }
 
+  let hint: React.ReactNode;
+  if (isUsingCurrentLocation) {
+    hint = null;
+  } else {
+    const prompt = isSearchEnabled
+      ? "Search for a location by typing above"
+      : "Enter the sighting location";
+    hint = (
+      <>
+        {prompt}
+        {isLocationApiAvailable &&
+          (locationFetchErrorType === "permission_denied" ? (
+            "."
+          ) : (
+            <>
+              {" "}
+              or choose <strong>My Location.</strong>
+            </>
+          ))}
+      </>
+    );
+  }
+
   return (
     <StringFormField
       fieldName={locationNameFieldKey}
@@ -582,22 +661,7 @@ function LocationField() {
       label="Where did you see the shark(s)?"
       placeholder={`Pier 39`}
       isDisabled={isUsingCurrentLocation}
-      hint={
-        isUsingCurrentLocation ? null : (
-          <>
-            Search for a location by typing above
-            {isLocationApiAvailable &&
-              (locationFetchErrorType === "permission_denied" ? (
-                "."
-              ) : (
-                <>
-                  {" "}
-                  or choose <strong>My Location.</strong>
-                </>
-              ))}
-          </>
-        )
-      }
+      hint={hint}
     >
       {isLocationApiAvailable &&
         (isUsingCurrentLocation ? (
