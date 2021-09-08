@@ -1,3 +1,4 @@
+import { useToast } from "@chakra-ui/toast";
 import * as React from "react";
 import { Session } from "../session/session";
 import {
@@ -11,6 +12,7 @@ interface AuthenticationProps {
 }
 
 export function Authentication({ children }: AuthenticationProps) {
+  const toast = useToast();
   const [session, setSession] = React.useState<Session>(null);
   React.useEffect(() => {
     const existingSession = supabase.auth.session();
@@ -24,7 +26,18 @@ export function Authentication({ children }: AuthenticationProps) {
   }
 
   function logout() {
-    setSession(null);
+    supabase.auth
+      .signOut()
+      .then(() => {
+        setSession(null);
+      })
+      .catch((error) => {
+        toast({
+          status: "error",
+          title: "Unable to sign out",
+          description: "Please reopen the browser window and try again.",
+        });
+      });
   }
 
   return (
