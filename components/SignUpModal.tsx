@@ -16,7 +16,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { signUpResponse } from "../pages/api/signUp";
 import { useSessionUser } from "../session/useSessionUser";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";

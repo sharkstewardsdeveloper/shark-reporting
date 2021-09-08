@@ -3,8 +3,6 @@ import {
   AlertIcon,
   Button,
   FormControl,
-  FormErrorIcon,
-  FormErrorMessage,
   FormLabel,
   Input,
   InputGroup,
@@ -15,11 +13,9 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Text,
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { LoginResponse } from "../pages/api/login";
 import { useSessionUser } from "../session/useSessionUser";
 import { supabase } from "../utils/supabaseClient";
 
