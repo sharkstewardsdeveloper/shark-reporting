@@ -19,6 +19,7 @@ import React, { useState } from "react";
 import { signUpResponse } from "../pages/api/signUp";
 import { useSessionUser } from "../session/useSessionUser";
 import { useRouter } from "next/router";
+import { supabase } from "../utils/supabaseClient";
 
 interface SignUpModalProps {
   onCloseSignUp: () => void;
@@ -38,19 +39,18 @@ export function SignUpModal({ onCloseSignUp }: SignUpModalProps) {
   }
 
   const handleSignUp = async (email: string, password: string) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const { error, user }: signUpResponse = await fetch("/api/signUp", {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      }).then((res) => res.json());
+      const { error, session } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
       if (error) {
         setErrorMessage(`Unable to log in: ${error}`);
       } else {
-        console.log(user);
+        updateLocalSession(session);
         onCloseSignUp();
         router.push("/confirmSignUp");
       }
@@ -66,7 +66,7 @@ export function SignUpModal({ onCloseSignUp }: SignUpModalProps) {
   return (
     <Modal isOpen={true} onClose={onCloseSignUp}>
       <ModalOverlay />
-      <ModalContent bgColor="brand.white" color="brand.primary">
+      <ModalContent>
         <ModalHeader>Sign up for Shark Reporter</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
