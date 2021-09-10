@@ -1,17 +1,15 @@
-import hammerhead from "../assets/images/sharks/hammerhead.jpeg";
+import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Box,
   HStack,
   IconButton,
   Select,
-  VStack,
   Text,
+  VStack,
 } from "@chakra-ui/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { Field } from "formik";
 import Image from "next/image";
 import React from "react";
-import { useMemo } from "react";
-import { Field } from "formik";
 
 export interface Shark {
   key: string;
@@ -125,12 +123,7 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
   // }
   return (
     <VStack spacing="4">
-      <Field
-        as={Select}
-        label="Shark Type"
-        isRequired
-        necessityIndicator="label"
-      >
+      <Field as={Select} label="Shark Type">
         <option key="great_white">Great White Shark</option>
         <option key="hammerhead">Hammerhead Shark</option>
       </Field>
