@@ -152,7 +152,14 @@ export default function Report() {
                     <SharkWasReleasedCheckboxField name="was_released" />
                   </Box>
 
-                  <Input mb={2} pt={1} type="file" onChange={onFileChange} />
+                  <Input
+                    multiple
+                    mb={2}
+                    pt={1}
+                    type="file"
+                    value={file}
+                    onChange={onFileChange}
+                  />
 
                   <StringFormField
                     fieldName="description"
