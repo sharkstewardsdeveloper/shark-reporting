@@ -71,8 +71,8 @@ export const SharkImageCarousel = (
   right: (() => void) | false
 ) => {
   return (
-    <VStack alignItems="stretch">
-      <Box>{shark.img}</Box>
+    <VStack alignItems="stretch" mt={2}>
+      {shark.img}
       <Text fontSize="sm" color="gray">
         {shark.desc}
       </Text>
