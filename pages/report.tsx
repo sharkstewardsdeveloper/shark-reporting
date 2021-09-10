@@ -157,7 +157,6 @@ export default function Report() {
                     mb={2}
                     pt={1}
                     type="file"
-                    value={file}
                     onChange={onFileChange}
                   />
 
