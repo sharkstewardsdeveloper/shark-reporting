@@ -44,7 +44,7 @@
 .react-datepicker {
   font-family: unset;
   font-size: 0.9rem;
-  border-color: var(--light-gray);
+  border-color: var(--chakra-colors-whiteAlpha-300);
   background-color: var(--content-background);
 }
 
@@ -60,19 +60,20 @@
   height: 2.5rem;
   border-radius: 0.25rem;
   border: 1px solid;
-  border-color: var(--light-gray);
+  border-color: var(--chakra-colors-whiteAlpha-300);
 }
 .react-datapicker__input-text {
   background-color: transparent;
 }
 
 .react-datepicker__input-container:hover {
-  border-color: var(--gray);
+  border-color: var(--chakra-colors-whiteAlpha-400);
 }
 .react-datepicker__input-container:focus-within {
   z-index: 1;
-  border-color: var(--blue600);
-  box-shadow: 0 0 0 1px var(--blue600);
+  /* Hard coded in Chakra to be this value. I think you can change it in the theme, though*/
+  border-color: #63b3ed;
+  box-shadow: 0 0 0 1px #63b3ed;
 }
 
 .react-datepicker__input-container > input {

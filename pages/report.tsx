@@ -70,7 +70,7 @@ function useInitialFormValues(): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
-    shark_type: SharkType.other,
+    shark_type: SharkType.greatWhite,
     was_caught: false,
     was_released: false,
     email,
@@ -92,7 +92,7 @@ export default function Report() {
         <title>Report a Shark Sighting · Shark Stewards</title>
       </Head>
       <VStack marginBottom="8">
-        <Alert status="info" colorScheme="gray">
+        <Alert status="info" colorScheme="gray" rounded="base">
           <AlertIcon />
           Fill out the information below to report what you have seen. This data
           is used for ocean conservation research purposes only.
@@ -108,22 +108,19 @@ export default function Report() {
           {(props) => (
             <Form>
               {currentStep == FormStep.SightingDetails && (
-                <>
+                <VStack spacing="6">
                   <LocationField />
 
                   <SightingDateField name="sighting_time" />
 
-                  <StringFormField
+                  {/* <StringFormField
                     fieldName="shark_type"
                     isRequired
                     label="What kind of shark did you see?"
                     placeholder="Type of Shark"
-                  />
+                  /> */}
 
-                  <SharkPicker
-                    shark_index={shark_index}
-                    set_shark_index={set_shark_index}
-                  />
+                  <SharkPicker name="shark_type" />
 
                   <Box marginTop="8" marginBottom="8">
                     <CheckboxFormField
@@ -141,7 +138,7 @@ export default function Report() {
                     hint="Helpful details: How many sharks were there? Were they harmed by other people?"
                     inputType="long_answer"
                   />
-                </>
+                </VStack>
               )}
 
               {currentStep === FormStep.AuthorInfo && (
@@ -296,9 +293,7 @@ function SightingDateField(props: FieldConfig) {
   const [field, meta] = useField(props);
   return (
     <FormControl isRequired isInvalid={meta.error && meta.touched}>
-      <FormLabel mb={2} mt={2} htmlFor="sightingTime">
-        When?
-      </FormLabel>
+      <FormLabel htmlFor="sightingTime">When?</FormLabel>
       <DatePicker
         placeholderText="Pick a time..."
         id="sightingTime"

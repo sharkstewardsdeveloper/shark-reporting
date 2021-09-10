@@ -19,8 +19,7 @@ export interface FormSubmission {
   user_id?: UUID | null;
 
   /** The type of shark that was sighted. */
-  // TODO: Use a more restrictive type (like `SharkType`)
-  shark_type: string;
+  shark_type: SharkType;
   /**
    * The time the shark was sighted, according to the author.
    * Postgres timestamptz.
@@ -58,6 +57,8 @@ export interface FormSubmission {
 
 /** Shark species that can be specified in the reporting form. */
 export enum SharkType {
+  greatWhite = "greatWhite",
+  hammerhead = "hammerhead",
   /** Any other shark species not listed above. */
   other = "other",
 }
@@ -72,8 +73,8 @@ export const reportFormSchema: Yup.SchemaOf<UnsubmittedFormResponse> =
   // See: https://github.com/jquense/yup#api
   Yup.object({
     shark_type: Yup.string().required(
-      `Select the type of shark you saw or "I don't know."`
-    ),
+      `Select the type of shark you saw or "other."`
+    ) as any, // Need to type as any here bc Yup doesn't have an enum element, and Typescript can't coerce enum to string
     location_name: Yup.string().required(
       "Please enter where you saw the shark."
     ),
