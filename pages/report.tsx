@@ -92,17 +92,20 @@ export default function Report() {
     const fileList = e.target.files;
     console.log(fileList);
     if (!fileList) return;
-    const uuid = uuidv4();
-    try {
-      const { data, error } = await supabase.storage
-        .from("user-report-images")
-        .upload(uuid + ".png", fileList[0], {
-          cacheControl: "3600",
-          upsert: false,
-        });
-      setImageFileUuid(uuid);
-    } catch (error: unknown) {
-      console.log(error);
+    for (let i = 0; i < fileList.length; i++) {
+      if (!fileList[i]) return;
+      const uuid = uuidv4();
+      try {
+        const { data, error } = await supabase.storage
+          .from("user-report-images")
+          .upload(uuid + ".png", fileList[i], {
+            cacheControl: "3600",
+            upsert: false,
+          });
+        setImageFileUuid(uuid);
+      } catch (error: unknown) {
+        console.log(error);
+      }
     }
   };
 
