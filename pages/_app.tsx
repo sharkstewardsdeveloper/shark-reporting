@@ -34,7 +34,7 @@ export default function MyApp({ Component, pageProps }) {
     <Authentication>
       <ChakraProvider theme={theme}>
         <Head>
-          <title>Shark Reporter · Shark Stewards</title>
+          <title>Shark Watch CA · Shark Stewards</title>
         </Head>
         <Grid templateRows="min-content min-content 1fr auto" height="100vh">
           <AppHeader />
@@ -42,7 +42,7 @@ export default function MyApp({ Component, pageProps }) {
             <AlertIcon />
             <Flex direction={["column", "column", "row"]}>
               <AlertTitle>
-                Shark Reporter is currently under construction!
+                Shark Watch CA is currently under construction!
               </AlertTitle>
               <Link
                 href="https://github.com/sharkstewardsdeveloper/shark-reporting"
