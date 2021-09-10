@@ -77,6 +77,7 @@ function useInitialFormValues(): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
+    // when i change this to null the form button does not allow for submitting
     image_uuid: "",
   };
 }
@@ -86,22 +87,29 @@ export default function Report() {
   const { session } = useSessionUser();
   const defaultFormFormValues = useInitialFormValues();
   const submitForm = useSubmitSharkSightingForm();
-  const [ImageFileUuid, setImageFileUuid] = useState<string>();
+  const [imageFileUuid, setImageFileUuid] = useState<string>();
+
+  const splitFileReturnExtension = (fileName: string) => {
+    return fileName.split(".").pop();
+  };
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
-    console.log(fileList);
     if (!fileList) return;
     for (let i = 0; i < fileList.length; i++) {
-      if (!fileList[i]) return;
+      // 5242880 = 5mb
+      if (!fileList[i] || fileList[i].size > 5242880) return;
       const uuid = uuidv4();
       try {
         const { data, error } = await supabase.storage
           .from("user-report-images")
-          .upload(uuid + ".png", fileList[i], {
-            cacheControl: "3600",
-            upsert: false,
-          });
+          .upload(
+            uuid + splitFileReturnExtension(fileList[i].name),
+            fileList[i],
+            {
+              upsert: false,
+            }
+          );
         setImageFileUuid(uuid);
       } catch (error: unknown) {
         console.log(error);
@@ -125,7 +133,7 @@ export default function Report() {
           validationSchema={reportFormSchema}
           onSubmit={(values, actions) => {
             actions.setSubmitting(true);
-            submitForm(values, actions, ImageFileUuid);
+            submitForm(values, actions, imageFileUuid);
           }}
         >
           {(props) => (
@@ -158,6 +166,7 @@ export default function Report() {
                     pt={1}
                     type="file"
                     onChange={onFileChange}
+                    accept="image/*"
                   />
 
                   <StringFormField
