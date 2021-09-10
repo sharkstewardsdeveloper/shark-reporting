@@ -1,6 +1,7 @@
 import hammerhead from "../assets/images/sharks/hammerhead.jpeg";
-import { Box, HStack, IconButton, Image } from "@chakra-ui/react";
+import { Box, HStack, IconButton, Select } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import Image from "next/image";
 import React from "react";
 import { useMemo } from "react";
 
@@ -21,7 +22,7 @@ export const sharks: Shark[] = [
   {
     key: "hammerhead",
     alt: "Hammerhead Shark",
-    src: hammerhead,
+    src: "/great-white-shark.jpg",
     desc: "",
   },
   // {
@@ -101,7 +102,7 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
       : () => set_shark_index(shark_index! + 1);
   return (
     <>
-      <Picker
+      <Select
         label="Shark Type"
         isRequired
         necessityIndicator="label"
@@ -112,16 +113,9 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
           shark_index != undefined ? sharks[shark_index].key : shark_index
         }
       >
-        <Item key="great_white">Great White Shark</Item>
-        <Item key="hammerhead">Hammerhead Shark</Item>
-        {/* <Item key="mako">Mako Shark</Item>
-                <Item key="blue">Blue Shark</Item>
-                <Item key="seven_gill">Sevengill Shark</Item>
-                <Item key="soup_fin">Soupfin (Tope or School) Shark</Item>
-                <Item key="six_gill">Sixgill Shark</Item>
-                <Item key="salmon">Salmon Shark</Item> */}
-        {/* <Item key="none">None of the above</Item> */}
-      </Picker>
+        <option key="great_white">Great White Shark</option>
+        <option key="hammerhead">Hammerhead Shark</option>
+      </Select>
       {shark_index != undefined
         ? SharkImageCarousel(sharks[shark_index], left, right)
         : null}
