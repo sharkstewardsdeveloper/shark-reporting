@@ -11,6 +11,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import Image from "next/image";
 import React from "react";
 import { useMemo } from "react";
+import { Field } from "formik";
 
 export interface Shark {
   key: string;
@@ -116,22 +117,23 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
     shark_index === sharks.length || shark_index === undefined
       ? null
       : () => set_shark_index(shark_index! + 1);
+  //         onSelectionChange={(id) =>
+  //   set_shark_index(sharks.findIndex((obj) => obj.key == id))
+  // }
+  // selectedKey={
+  //   shark_index != undefined ? sharks[shark_index].key : shark_index
+  // }
   return (
     <VStack spacing="4">
-      <Select
+      <Field
+        as={Select}
         label="Shark Type"
         isRequired
         necessityIndicator="label"
-        onSelectionChange={(id) =>
-          set_shark_index(sharks.findIndex((obj) => obj.key == id))
-        }
-        selectedKey={
-          shark_index != undefined ? sharks[shark_index].key : shark_index
-        }
       >
         <option key="great_white">Great White Shark</option>
         <option key="hammerhead">Hammerhead Shark</option>
-      </Select>
+      </Field>
       {shark_index != undefined
         ? SharkImageCarousel(sharks[shark_index], left, right)
         : null}
