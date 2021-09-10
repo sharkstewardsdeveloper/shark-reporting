@@ -1,35 +1,49 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import {
   Alert,
   AlertIcon,
   Box,
-  Flex,
   Button,
-  Input,
   Checkbox,
-  HStack,
-  Textarea,
-  VStack,
+  Container,
+  Divider,
   FormControl,
-  FormLabel,
   FormErrorMessage,
   FormHelperText,
-  FormControlProps,
+  FormLabel,
+  HStack,
+  Heading,
+  Input,
+  Textarea,
+  VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import {
-  Formik,
   Field,
-  Form,
-  FormikHelpers,
-  useFormikContext,
-  useField,
   FieldConfig,
+  FieldProps,
+  Form,
+  Formik,
+  FormikHelpers,
+  useField,
+  useFormikContext,
 } from "formik";
-import * as Yup from "yup";
 import { useSessionUser } from "../session/useSessionUser";
 import { DateTime } from "luxon";
 import { DatePicker } from "../components/DatePicker";
+import {
+  SharkType,
+  UnsubmittedFormResponse,
+  reportFormSchema,
+} from "../model/form_submission";
+import { PostReportResponse } from "./api/postReport";
+import {
+  fetchCurrentLocation,
+  useIsGeolocationApiAvailable,
+} from "../utils/geolocationApi";
+import Head from "next/head";
+import { SharkPicker } from "../components/SharkPicker";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -52,99 +66,39 @@ enum FormStep {
   AuthorInfo,
 }
 
+function useInitialFormValues(): UnsubmittedFormResponse {
+  const email = useSessionUser().session?.user.email;
+  return {
+    sighting_time: DateTime.now().toISO(),
+    shark_type: SharkType.other,
+    was_caught: false,
+    was_released: false,
+    email,
+    should_subscribe: false,
+    confirmed_get_app_updates: false,
+  };
+}
+
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
-  const [errorMessage, setErrorMessage] = useState<string>();
-  const router = useRouter();
+  let [shark_index, set_shark_index] = React.useState<number | undefined>();
   const { session } = useSessionUser();
-
-  const reportFormSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        locationName: Yup.string().required(
-          "Please enter where you saw the shark."
-        ),
-        sightingTime: Yup.string()
-          .required("Please enter when you saw the shark.")
-          .default(() => DateTime.now().toISO()),
-        email: Yup.string()
-          .email("Invalid email")
-          .default(() => {
-            return session?.user.email;
-          }),
-        authorName: Yup.string(),
-        sharkType: Yup.string().required(
-          `Select the type of shark you saw or "I don't know."`
-        ),
-      }),
-    [session?.user]
-  );
-
-  async function submitForm<FormValuesType>(
-    values: FormValuesType,
-    actions: FormikHelpers<FormValuesType>
-  ) {
-    console.log(values);
-    try {
-      const data = await fetch("/api/postReport", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(session == null ? {} : { Authorization: session.accessToken }),
-        },
-        body: JSON.stringify(values),
-      });
-      console.log(data);
-      if (data.status === 400) {
-        setErrorMessage(`Please check the form for errors and try again.`);
-      } else if (data.status === 401) {
-        setErrorMessage(`Server Error: ${JSON.stringify(data.status)}`);
-      } else {
-        router.push("/confirmReport");
-      }
-    } catch (error: unknown) {
-      let message: string;
-      if (error instanceof Error) {
-        message = `Something went wrong: ${error.message}`;
-      } else {
-        message = `Something went wrong. Please try again.`;
-      }
-      setErrorMessage(message);
-    } finally {
-      actions.setSubmitting(false);
-    }
-  }
+  const defaultFormFormValues = useInitialFormValues();
+  const submitForm = useSubmitSharkSightingForm();
 
   return (
-    <Flex
-      align="start"
-      justify="center"
-      flexDirection="column"
-      width="100%"
-      height="100%"
-    >
-      <VStack
-        align="center"
-        margin="auto"
-        spacing={4}
-        p={3}
-        width="lg"
-        height="100%"
-      >
-        {errorMessage != null && (
-          <Alert status="error">
-            <AlertIcon />
-            {errorMessage}
-          </Alert>
-        )}
+    <Container>
+      <Head>
+        <title>Report a Shark Sighting · Shark Stewards</title>
+      </Head>
+      <VStack marginBottom="8">
+        <Alert status="info" colorScheme="gray">
+          <AlertIcon />
+          Fill out the information below to report what you have seen. This data
+          is used for ocean conservation research purposes only.
+        </Alert>
         <Formik
-          initialValues={{
-            locationName: undefined,
-            email: undefined,
-            sightingTime: DateTime.now().toISO(),
-            authorName: undefined,
-            sharkType: undefined,
-          }}
+          initialValues={defaultFormFormValues}
           validationSchema={reportFormSchema}
           onSubmit={(values, actions) => {
             actions.setSubmitting(true);
@@ -153,227 +107,188 @@ export default function Report() {
         >
           {(props) => (
             <Form>
-              <VStack
-                align="center"
-                margin="auto"
-                spacing={4}
-                p={3}
-                width="lg"
-                height="100%"
-              >
-                <Field name="locationName">
-                  {({ field, form }) => (
-                    <FormControl
-                      isRequired
-                      isInvalid={
-                        form.errors.locationName && form.touched.locationName
-                      }
-                    >
-                      <FormLabel mb={2} mt={2} htmlFor="locationName">
-                        Where did you see the shark(s)?
-                      </FormLabel>
-                      <Input
-                        {...field}
-                        id="locationName"
-                        placeholder="San Francisco"
-                      />
-                      {form.errors.locationName && form.touched.locationName ? (
-                        <FormErrorMessage>
-                          {form.errors.locationName}
-                        </FormErrorMessage>
-                      ) : null}
-                    </FormControl>
-                  )}
-                </Field>
+              {currentStep == FormStep.SightingDetails && (
+                <>
+                  <LocationField />
 
-                <SightingDateField name="sightingTime" />
+                  <SightingDateField name="sighting_time" />
 
-                <Field name="sharkType">
-                  {({ field, form }) => (
-                    <FormControl
-                      isRequired
-                      isInvalid={
-                        form.errors.sharkType && form.touched.sharkType
-                      }
-                    >
-                      <FormLabel mb={2} mt={2} htmlFor="sharkType">
-                        Do you know what kind of shark it was?
-                      </FormLabel>
-                      {/* TODO replace this with shark picker component, default to "I don't know" */}
-                      <Input
-                        {...field}
-                        id="sharkType"
-                        placeholder="Type of Shark"
-                      />
-                      {form.errors.sharkType && form.touched.sharkType ? (
-                        <FormErrorMessage>
-                          {form.errors.sharkType}
-                        </FormErrorMessage>
-                      ) : null}
-                    </FormControl>
-                  )}
-                </Field>
+                  <StringFormField
+                    fieldName="shark_type"
+                    isRequired
+                    label="What kind of shark did you see?"
+                    placeholder="Type of Shark"
+                  />
 
-                <Field name="wasCaught">
-                  {({ field, form }) => (
-                    <FormControl isRequired marginTop={2}>
-                      <Checkbox {...field} name="wasCaught" size="lg">
-                        <FormLabel marginTop={2}>
-                          I saw the shark get caught by a fisherman.
-                        </FormLabel>
-                      </Checkbox>
-                      <FormHelperText mt={0}>
-                        Check this box if you saw the shark out of the water
-                        after being removed by a human (even if it was later
-                        returned safely).
-                      </FormHelperText>
-                    </FormControl>
-                  )}
-                </Field>
-                <SharkWasReleasedCheckboxField
-                  name="wasReleased"
-                  marginBottom={2}
-                />
-                <Field name="description">
-                  {({ field, form }) => (
-                    <FormControl
-                      isInvalid={
-                        form.errors.description && form.touched.description
-                      }
-                    >
-                      <FormLabel mb={2} mt={2} htmlFor="description">
-                        Is there other information you can provide?
-                      </FormLabel>
-                      <Textarea
-                        {...field}
-                        id="description"
-                        placeholder="Details..."
-                      />
-                      <FormHelperText>
-                        The more accurate our data the more of an impact we can
-                        make{" "}
-                      </FormHelperText>
-                      {form.errors.description && form.touched.description ? (
-                        <FormErrorMessage>
-                          {form.errors.description}
-                        </FormErrorMessage>
-                      ) : null}
-                    </FormControl>
-                  )}
-                </Field>
+                  <SharkPicker
+                    shark_index={shark_index}
+                    set_shark_index={set_shark_index}
+                  />
 
-                {currentStep === FormStep.AuthorInfo && (
-                  <Box>
-                    <Field name="authorName">
-                      {({ field, form }) => (
-                        <FormControl>
-                          <FormLabel mb={2} htmlFor="authorName">
-                            Author Name
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            id="authorName"
-                            placeholder="Your Name"
-                          />
-                          {form.errors.authorName && form.touched.authorName ? (
-                            <FormErrorMessage>
-                              {form.errors.authorName}
-                            </FormErrorMessage>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    </Field>
-                    <Field name="email">
-                      {({ field, form }) => (
-                        <FormControl>
-                          <FormLabel mb={2} mt={4} htmlFor="email">
-                            Email
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            id="email"
-                            placeholder="Email"
-                            type="email"
-                          />
-                          {form.errors.email && form.touched.email ? (
-                            <FormErrorMessage>
-                              {form.errors.email}
-                            </FormErrorMessage>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    </Field>
-                    <HStack>
-                      <Field name="shouldSubscribe">
-                        {({ field }) => (
-                          <FormControl>
-                            <Flex flexDirection="row" justifyContent="left">
-                              <Checkbox m={1} {...field} id="shouldSubscribe" />
-                              <FormLabel m={2}>
-                                Hear about Shark Stewards updates
-                              </FormLabel>
-                            </Flex>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <Field name="confirmedGetAppUpdates">
-                        {({ field }) => (
-                          <FormControl>
-                            <Flex flexDirection="row" justifyContent="left">
-                              <Checkbox
-                                m={1}
-                                {...field}
-                                id="confirmedGetAppUpdates"
-                              />
-                              <FormLabel m={2}>
-                                Subscribe to App Updates
-                              </FormLabel>
-                            </Flex>
-                          </FormControl>
-                        )}
-                      </Field>
-                    </HStack>
+                  <Box marginTop="8" marginBottom="8">
+                    <CheckboxFormField
+                      fieldName="was_caught"
+                      label="I saw the shark get caught by a fisherman."
+                      hint="Check this box if you saw the shark out of the water after being removed by a human (even if it was later returned safely)."
+                    />
+                    <SharkWasReleasedCheckboxField name="was_released" />
                   </Box>
-                )}
-                {session == null && currentStep === FormStep.SightingDetails ? (
-                  <Button
-                    mt={4}
-                    mb={2}
-                    width="100%"
-                    isDisabled={!props.dirty || !props.isValid}
-                    isLoading={props.isSubmitting || props.isValidating}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      if (
-                        currentStep === FormStep.SightingDetails &&
-                        session == null
-                      ) {
-                        setCurrentStep(FormStep.AuthorInfo);
-                      }
-                    }}
-                  >
-                    Next
-                  </Button>
-                ) : (
-                  <Button
-                    mt={4}
-                    mb={2}
-                    width="100%"
-                    isDisabled={!props.touched || !props.isValid}
-                    isLoading={props.isSubmitting || props.isValidating}
-                    type={"submit"}
-                  >
-                    Submit
-                  </Button>
-                )}
-              </VStack>
+
+                  <StringFormField
+                    fieldName="description"
+                    label="Is there other information you'd like provide?"
+                    placeholder="Details..."
+                    hint="Helpful details: How many sharks were there? Were they harmed by other people?"
+                    inputType="long_answer"
+                  />
+                </>
+              )}
+
+              {currentStep === FormStep.AuthorInfo && (
+                <Box marginTop="4" marginBottom="4">
+                  <Heading size="sm">
+                    Can we contact you about your report or other shark
+                    preservation efforts? Your information will never be given
+                    to a third party.
+                  </Heading>
+                  <Divider marginTop="2" marginBottom="3" />
+                  <StringFormField
+                    fieldName="author_name"
+                    label="Your Name (optional)"
+                    placeholder="Shark Friend"
+                  />
+                  <StringFormField
+                    fieldName="email"
+                    label="Your Email Address (optional)"
+                    placeholder="shark.helper@example.com"
+                    inputType="email"
+                  />
+                  <CheckboxFormField
+                    fieldName="should_subscribe"
+                    label="Subscribe to Shark Stewards updates"
+                  />
+                  <CheckboxFormField
+                    fieldName="confirmed_get_app_updates"
+                    label="I'd like to be notified when we improve this site"
+                  />
+                </Box>
+              )}
+              {session == null && currentStep === FormStep.SightingDetails ? (
+                <Button
+                  mt={4}
+                  mb={2}
+                  width="100%"
+                  isDisabled={!props.dirty || !props.isValid}
+                  isLoading={props.isSubmitting || props.isValidating}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (
+                      currentStep === FormStep.SightingDetails &&
+                      session == null
+                    ) {
+                      setCurrentStep(FormStep.AuthorInfo);
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  mt={4}
+                  mb={2}
+                  width="100%"
+                  isDisabled={!props.dirty || !props.isValid}
+                  isLoading={props.isSubmitting || props.isValidating}
+                  type={"submit"}
+                >
+                  Submit
+                </Button>
+              )}
+              {session == null && currentStep === FormStep.AuthorInfo && (
+                <Button
+                  mb={2}
+                  width="100%"
+                  variant="ghost"
+                  isDisabled={props.isSubmitting || props.isValidating}
+                  onClick={() => {
+                    setCurrentStep(FormStep.SightingDetails);
+                  }}
+                >
+                  Previous
+                </Button>
+              )}
             </Form>
           )}
         </Formik>
       </VStack>
-    </Flex>
+    </Container>
   );
+}
+
+function useSubmitSharkSightingForm() {
+  const toast = useToast();
+  const router = useRouter();
+  const { session } = useSessionUser();
+
+  async function submitForm<FormValuesType>(
+    values: FormValuesType,
+    actions: FormikHelpers<FormValuesType>
+  ) {
+    try {
+      const data = await fetch("/api/postReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session == null ? {} : { Authorization: session.access_token }),
+        },
+        body: JSON.stringify(values),
+      });
+      const response: PostReportResponse = await data.json();
+      // `=== true` narrows the type in the else-case
+      if (response.success === true) {
+        toast({
+          title: "Report submitted successfully! Finishing up...",
+          status: "success",
+        });
+        router.push("/confirmReport");
+        return;
+      }
+
+      if (data.status === 422) {
+        toast({
+          title: "Check the form for errors",
+          description: response.error,
+          status: "error",
+          isClosable: true,
+        });
+      } else if (data.status === 401) {
+        toast({
+          title: "Your session has expired",
+          description: "Please log in again to continue.",
+          status: "error",
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Something went wrong",
+          description: "Please check your connection and try again.",
+          status: "error",
+          isClosable: true,
+        });
+      }
+    } catch (error: unknown) {
+      toast({
+        title: "Something went wrong",
+        description: "Please check your connection and try again.",
+        status: "error",
+        isClosable: true,
+      });
+    } finally {
+      actions.setSubmitting(false);
+    }
+  }
+
+  return submitForm;
 }
 
 function SightingDateField(props: FieldConfig) {
@@ -385,6 +300,7 @@ function SightingDateField(props: FieldConfig) {
         When?
       </FormLabel>
       <DatePicker
+        placeholderText="Pick a time..."
         id="sightingTime"
         showTimeSelect
         dateFormat={"MMMM d, yyyy h:mm aa"}
@@ -408,24 +324,123 @@ function SightingDateField(props: FieldConfig) {
   );
 }
 
+interface StringFormFieldProps {
+  fieldName: keyof UnsubmittedFormResponse;
+  label: string;
+  placeholder: string;
+  isRequired?: boolean;
+  isDisabled?: boolean;
+  inputType?: "short_answer" | "email" | "long_answer";
+  /** Additional helper text displayed below the text input. */
+  hint?: React.ReactNode;
+}
+
+/**
+ * A Formik field for string-type inputs that renders using Chakra's form components.
+ * @see https://formik.org/docs/api/field#component
+ */
+function StringFormField({
+  fieldName,
+  label,
+  placeholder,
+  hint,
+  inputType = "short_answer",
+  isRequired = false,
+  isDisabled,
+  children,
+}: PropsWithChildren<StringFormFieldProps>) {
+  const TextInputComponent = inputType === "long_answer" ? Textarea : Input;
+  return (
+    <FormControl isRequired={isRequired}>
+      <FormLabel marginTop={2} htmlFor={fieldName}>
+        {label}
+      </FormLabel>
+      <Field name={fieldName}>
+        {({ field, form }: FieldProps<string, UnsubmittedFormResponse>) => (
+          <>
+            <HStack>
+              <TextInputComponent
+                {...field}
+                id={fieldName}
+                placeholder={placeholder}
+                isDisabled={isDisabled}
+                type={
+                  inputType !== "short_answer" && inputType !== "long_answer"
+                    ? inputType
+                    : undefined
+                }
+              />
+              {children}
+            </HStack>
+            {hint && <FormHelperText>{hint}</FormHelperText>}
+            {form.errors[fieldName] != null && form.touched[fieldName] ? (
+              <FormErrorMessage>{form.errors[fieldName]}</FormErrorMessage>
+            ) : null}
+          </>
+        )}
+      </Field>
+    </FormControl>
+  );
+}
+
+interface CheckboxFormFieldProps {
+  fieldName: keyof UnsubmittedFormResponse;
+  label: string;
+  isRequired?: boolean;
+  /** Additional helper text displayed below the text input. */
+  hint?: React.ReactNode;
+}
+
+/**
+ * A Formik field for boolean-type inputs that renders using Chakra's form components.
+ * @see https://formik.org/docs/api/field#component
+ */
+function CheckboxFormField({
+  fieldName,
+  label,
+  hint,
+  isRequired = false,
+}: CheckboxFormFieldProps) {
+  return (
+    <FormControl isRequired={isRequired}>
+      <Field name={fieldName}>
+        {({
+          field,
+          form,
+        }: FieldProps<string | number, UnsubmittedFormResponse>) => (
+          <>
+            <Checkbox {...field} id={fieldName} size="lg">
+              <FormLabel htmlFor={fieldName} paddingTop={2}>
+                {label}
+              </FormLabel>
+            </Checkbox>
+            {hint && <FormHelperText>{hint}</FormHelperText>}
+            {form.errors[fieldName] != null && form.touched[fieldName] ? (
+              <FormErrorMessage>{form.errors[fieldName]}</FormErrorMessage>
+            ) : null}
+          </>
+        )}
+      </Field>
+    </FormControl>
+  );
+}
+
 /**
  * @see https://formik.org/docs/examples/dependent-fields
  */
-function SharkWasReleasedCheckboxField({
-  marginBottom,
-  ...fieldProps
-}: FieldConfig & Pick<FormControlProps, "marginBottom">) {
+function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
   const {
-    values: { wasCaught },
+    values: { was_caught: wasCaught },
     setFieldValue,
-  } = useFormikContext<{ wasCaught?: boolean }>();
+  } = useFormikContext<Pick<UnsubmittedFormResponse, "was_caught">>();
   const [field, meta] = useField(fieldProps);
+  const fieldName = fieldProps.name;
 
   React.useEffect(() => {
     if (!wasCaught) {
-      setFieldValue(fieldProps.name, undefined, false);
+      setFieldValue(fieldName, false, false);
     }
-  }, [wasCaught, setFieldValue, fieldProps.name]);
+  }, [wasCaught, setFieldValue, fieldName]);
 
   if (!wasCaught) {
     return null;
@@ -436,19 +451,123 @@ function SharkWasReleasedCheckboxField({
       isRequired
       isDisabled={!wasCaught}
       isInvalid={meta.error && meta.touched}
-      marginBottom={marginBottom}
     >
-      <Checkbox {...field} name="wasReleased" size="lg">
-        <FormLabel marginTop={2}>
-          The shark was safely released after being caught.
+      <Checkbox {...field} size="lg" id={fieldName}>
+        <FormLabel paddingTop={2} htmlFor={fieldName}>
+          Was the shark safely released after being caught?
         </FormLabel>
       </Checkbox>
-      {wasCaught && (
-        <FormHelperText mt={0}>
-          Check this box if you saw the fisherman who caught the shark(s) also
-          release them safely back into the ocean.
-        </FormHelperText>
-      )}
     </FormControl>
+  );
+}
+
+function LocationField() {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const toast = useToast();
+
+  const isLocationApiAvailable = useIsGeolocationApiAvailable();
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
+  const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
+    useState(false);
+  const [locationFetchErrorType, setLocationFetchErrorType] = useState<
+    "permission_denied" | "unable_to_resolve"
+  >();
+
+  const locationNameFieldKey = "location_name";
+
+  async function handleSelectCurrentLocation() {
+    setIsFetchingCurrentLocation(true);
+
+    try {
+      const { coords } = await fetchCurrentLocation(true);
+      formContext.setFieldValue(
+        locationNameFieldKey,
+        "📍 Current Location",
+        true
+      );
+      formContext.setFieldValue("location_lat", String(coords.latitude), true);
+      formContext.setFieldValue(
+        "location_long",
+        String(coords.longitude),
+        true
+      );
+      setIsUsingCurrentLocation(true);
+    } catch (e: unknown) {
+      const error = e as GeolocationPositionError;
+      if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
+        setLocationFetchErrorType("permission_denied");
+        toast({
+          status: "error",
+          title: "Access to your location has been blocked",
+          description:
+            "Enable location permissions and refresh the page to use your current location. You can also search for a location instead.",
+        });
+      } else {
+        setLocationFetchErrorType("unable_to_resolve");
+        toast({
+          status: "error",
+          title: "Your location could not be determined",
+          description: "Please try again or search for a location instead.",
+        });
+      }
+    } finally {
+      setIsFetchingCurrentLocation(false);
+    }
+  }
+
+  function handleClearCurrentLocation() {
+    setIsUsingCurrentLocation(false);
+    formContext.setFieldValue(locationNameFieldKey, "", true);
+    formContext.setFieldValue("location_lat", undefined, false);
+    formContext.setFieldValue("location_long", undefined, false);
+  }
+
+  return (
+    <StringFormField
+      fieldName={locationNameFieldKey}
+      isRequired
+      label="Where did you see the shark(s)?"
+      placeholder={`Pier 39`}
+      isDisabled={isUsingCurrentLocation}
+      hint={
+        isUsingCurrentLocation ? null : (
+          <>
+            Search for a location by typing above
+            {isLocationApiAvailable &&
+              (locationFetchErrorType === "permission_denied" ? (
+                "."
+              ) : (
+                <>
+                  {" "}
+                  or choose <strong>My Location.</strong>
+                </>
+              ))}
+          </>
+        )
+      }
+    >
+      {isLocationApiAvailable &&
+        (isUsingCurrentLocation ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            onClick={handleClearCurrentLocation}
+          >
+            Clear
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            isLoading={isFetchingCurrentLocation}
+            isDisabled={locationFetchErrorType === "permission_denied"}
+            onClick={handleSelectCurrentLocation}
+          >
+            📍 My Location
+          </Button>
+        ))}
+    </StringFormField>
   );
 }

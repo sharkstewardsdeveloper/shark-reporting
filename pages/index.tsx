@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Container,
-  Heading,
-  Flex,
-  Text,
-  Button,
-  Link,
-  Stack,
-} from "@chakra-ui/react";
+import { Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/react";
 
 export default function Home() {
   return (
@@ -22,7 +14,9 @@ export default function Home() {
       <Text>Report shark sightings</Text>
 
       <Stack direction="row" spacing={4} m={3}>
-        <Button variant="solid">Educate</Button>
+        <Link href="/education">
+          <Button variant="solid">Educate</Button>
+        </Link>
         <Link href="/report">
           <Button variant="outline">Report</Button>
         </Link>

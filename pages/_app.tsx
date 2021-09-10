@@ -3,19 +3,18 @@ import { AppFooter } from "../components/AppFooter";
 import Head from "next/head";
 import {
   Button,
-  Link,
   ChakraProvider,
   Flex,
   Grid,
   Heading,
-  Menu,
   Image,
+  Link,
+  Menu,
   MenuButton,
+  MenuGroup,
   MenuItem,
   MenuList,
-  Text,
   useDisclosure,
-  MenuGroup,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
 import "../styles/date-picker.css";
@@ -29,7 +28,7 @@ export default function MyApp({ Component, pageProps }) {
     <Authentication>
       <ChakraProvider theme={theme}>
         <Head>
-          <title>Shark Reporting by Shark Stewards</title>
+          <title>Shark Reporter · Shark Stewards</title>
         </Head>
         <Grid templateRows="min-content 1fr auto" height="100vh">
           <AppHeader />
@@ -82,7 +81,7 @@ function AppHeader() {
                 <MenuItem>My Sightings</MenuItem>
                 <MenuGroup>
                   <MenuItem>Profile</MenuItem>
-                  <MenuItem onClick={logout}>Logout</MenuItem>
+                  <MenuItem onClick={logout}>Sign Out</MenuItem>
                 </MenuGroup>
               </>
             )}

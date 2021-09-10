@@ -1,5 +1,5 @@
 import { User } from "@supabase/supabase-js";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GetProfileResponse } from "../pages/api/getProfile";
 import { Session } from "../session/session";
 
@@ -28,7 +28,7 @@ export function Account({ session }: AccountProps) {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
-          Authorization: session.accessToken,
+          Authorization: session.access_token,
         },
       }).then((res) => res.json());
 

@@ -3,8 +3,6 @@ import {
   AlertIcon,
   Button,
   FormControl,
-  FormErrorIcon,
-  FormErrorMessage,
   FormLabel,
   Input,
   InputGroup,
@@ -15,12 +13,11 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Text,
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { LoginResponse } from "../pages/api/login";
 import { useSessionUser } from "../session/useSessionUser";
+import { supabase } from "../utils/supabaseClient";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -39,26 +36,14 @@ export function AuthModal({ onClose }: AuthModalProps) {
   }
 
   const handleLogin = async (email: string, password: string) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const { error, access_token, refresh_token, user }: LoginResponse =
-        await fetch("/api/login", {
-          method: "POST", // or 'PUT'
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }).then((res) => res.json());
+      const { data, error } = await supabase.auth.signIn({ email, password });
       if (error) {
         setErrorMessage(`Unable to log in: ${error}`);
       } else {
-        updateLocalSession({
-          accessToken: access_token,
-          refreshToken: refresh_token,
-          user: {
-            email: user.email!,
-          },
-        });
+        updateLocalSession(data);
         onClose();
       }
     } catch (error) {
@@ -73,7 +58,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
   return (
     <Modal isOpen={true} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent bgColor="brand.white" color="brand.primary">
+      <ModalContent>
         <ModalHeader>Login to Shark Reporter</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
