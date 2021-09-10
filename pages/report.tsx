@@ -81,7 +81,7 @@ function useInitialFormValues(): UnsubmittedFormResponse {
 
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
-  let [shark_index, set_shark_index] = React.useState<number | undefined>();
+  let [shark_index, set_shark_index] = React.useState<number | undefined>(0);
   const { session } = useSessionUser();
   const defaultFormFormValues = useInitialFormValues();
   const submitForm = useSubmitSharkSightingForm();

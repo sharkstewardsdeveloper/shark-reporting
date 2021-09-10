@@ -1,5 +1,12 @@
 import hammerhead from "../assets/images/sharks/hammerhead.jpeg";
-import { Box, HStack, IconButton, Select } from "@chakra-ui/react";
+import {
+  Box,
+  HStack,
+  IconButton,
+  Select,
+  VStack,
+  Text,
+} from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import Image from "next/image";
 import React from "react";
@@ -22,8 +29,8 @@ export const sharks: Shark[] = [
   {
     key: "hammerhead",
     alt: "Hammerhead Shark",
-    src: "/great-white-shark.jpg",
-    desc: "",
+    src: "/hammerhead.jpg",
+    desc: "The hammerhead sharks are a group of sharks, so named for the unusual structure of their heads, which are flattened and laterally extended into a hammer shape. The known species range from 0.9 to 6.0 m (2 ft 11 in to 19 ft 8 in) in length and weigh from 3 to 580 kg (6.6 to 1,278.7 lb). They are usually light gray and have a greenish tint",
   },
   // {
   //     key: "mako",
@@ -58,27 +65,36 @@ export const SharkImageCarousel = (
   right: (() => void) | false
 ) => {
   return (
-    <>
-      <Image src={shark_id.src} alt={shark_id.alt} height="auto" width="100%" />
-      <Box>{shark_id.desc}</Box>
+    <VStack alignItems="stretch">
+      <Box>
+        <Image
+          src={shark_id.src}
+          alt={shark_id.alt}
+          width="2500"
+          height="1669"
+        />
+      </Box>
+      <Text fontSize="sm" color="gray">
+        {shark_id.desc}
+      </Text>
       <HStack>
         <IconButton
           aria-label="previous"
           icon={<ChevronLeftIcon />}
-          isDisabled={right ? true : false}
+          isDisabled={!left}
           onClick={left ? left : undefined}
-          variant="ghost"
+          variant="solid"
         ></IconButton>
         <Box flexGrow={1} />
         <IconButton
           aria-label="next"
-          icon={<ChevronLeftIcon />}
-          isDisabled={right ? true : false}
+          icon={<ChevronRightIcon />}
+          isDisabled={!right}
           onClick={right ? right : undefined}
-          variant="ghost"
+          variant="solid"
         ></IconButton>
       </HStack>
-    </>
+    </VStack>
   );
 };
 
@@ -101,7 +117,7 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
       ? null
       : () => set_shark_index(shark_index! + 1);
   return (
-    <>
+    <VStack spacing="4">
       <Select
         label="Shark Type"
         isRequired
@@ -119,6 +135,6 @@ export const SharkPicker: React.FC<SharkPickerProps> = ({
       {shark_index != undefined
         ? SharkImageCarousel(sharks[shark_index], left, right)
         : null}
-    </>
+    </VStack>
   );
 };
