@@ -43,6 +43,8 @@ import {
   useIsGeolocationApiAvailable,
 } from "../utils/geolocationApi";
 import Head from "next/head";
+import { supabase } from "../utils/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -75,6 +77,7 @@ function useInitialFormValues(): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
+    image_uuid: "",
   };
 }
 
@@ -83,6 +86,25 @@ export default function Report() {
   const { session } = useSessionUser();
   const defaultFormFormValues = useInitialFormValues();
   const submitForm = useSubmitSharkSightingForm();
+  const [ImageFileUuid, setImageFileUuid] = useState<string>();
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    console.log(fileList);
+    if (!fileList) return;
+    const uuid = uuidv4();
+    try {
+      const { data, error } = await supabase.storage
+        .from("user-report-images")
+        .upload(uuid + ".png", fileList[0], {
+          cacheControl: "3600",
+          upsert: false,
+        });
+      setImageFileUuid(uuid);
+    } catch (error: unknown) {
+      console.log(error);
+    }
+  };
 
   return (
     <Container>
@@ -100,7 +122,7 @@ export default function Report() {
           validationSchema={reportFormSchema}
           onSubmit={(values, actions) => {
             actions.setSubmitting(true);
-            submitForm(values, actions);
+            submitForm(values, actions, ImageFileUuid);
           }}
         >
           {(props) => (
@@ -126,6 +148,8 @@ export default function Report() {
                     />
                     <SharkWasReleasedCheckboxField name="was_released" />
                   </Box>
+
+                  <Input mb={2} pt={1} type="file" onChange={onFileChange} />
 
                   <StringFormField
                     fieldName="description"
@@ -225,7 +249,8 @@ function useSubmitSharkSightingForm() {
 
   async function submitForm<FormValuesType>(
     values: FormValuesType,
-    actions: FormikHelpers<FormValuesType>
+    actions: FormikHelpers<FormValuesType>,
+    imageUuid: string
   ) {
     try {
       const data = await fetch("/api/postReport", {
@@ -234,7 +259,7 @@ function useSubmitSharkSightingForm() {
           "Content-Type": "application/json",
           ...(session == null ? {} : { Authorization: session.access_token }),
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, image_uuid: imageUuid }),
       });
       const response: PostReportResponse = await data.json();
       // `=== true` narrows the type in the else-case
