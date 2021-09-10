@@ -1,18 +1,17 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Box,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
   HStack,
   IconButton,
   Select,
   Text,
   VStack,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
 } from "@chakra-ui/react";
-import { Field, FieldConfig, useField, useFormikContext } from "formik";
+import { FieldConfig, useField } from "formik";
 import Image from "next/image";
-import StaticImport from "next/image";
 import React from "react";
 import { SharkType } from "../model/form_submission";
 import great_white_img from "../public/sharks/great-white-shark.jpg";
