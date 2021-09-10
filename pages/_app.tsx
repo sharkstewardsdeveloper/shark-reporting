@@ -87,7 +87,7 @@ function AppHeader() {
               alt="Shark Stewards"
             />
             <Heading m={1} fontSize={["large", "3xl", "3xl"]}>
-              Shark Reporter
+              Shark Watch CA
             </Heading>
           </Flex>
         </Link>
