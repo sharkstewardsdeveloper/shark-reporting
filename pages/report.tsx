@@ -36,6 +36,7 @@ import {
   SharkType,
   UnsubmittedFormResponse,
   reportFormSchema,
+  UUID,
 } from "../model/form_submission";
 import { PostReportResponse } from "./api/postReport";
 import {
@@ -67,7 +68,7 @@ enum FormStep {
   AuthorInfo,
 }
 
-function useInitialFormValues(): UnsubmittedFormResponse {
+function useInitialFormValues(formUuid: string): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
@@ -79,13 +80,15 @@ function useInitialFormValues(): UnsubmittedFormResponse {
     confirmed_get_app_updates: false,
     // when i change this to null the form button does not allow for submitting
     image_uuid: "",
+    form_submission_ID: formUuid,
   };
 }
 
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const defaultFormFormValues = useInitialFormValues();
+  const [formUUID, setFormUUID] = useState(uuidv4());
+  const defaultFormFormValues = useInitialFormValues(formUUID);
   const submitForm = useSubmitSharkSightingForm();
   const [imageFileUuid, setImageFileUuid] = useState<string>();
 
@@ -99,18 +102,18 @@ export default function Report() {
     for (let i = 0; i < fileList.length; i++) {
       // 5242880 = 5mb
       if (!fileList[i] || fileList[i].size > 5242880) return;
-      const uuid = uuidv4();
       try {
         const { data, error } = await supabase.storage
           .from("user-report-images")
           .upload(
-            uuid + splitFileReturnExtension(fileList[i].name),
+            `./${formUUID}/${fileList[i].name}` +
+              splitFileReturnExtension(fileList[i].name),
             fileList[i],
             {
               upsert: false,
             }
           );
-        setImageFileUuid(uuid);
+        setImageFileUuid(formUUID);
       } catch (error: unknown) {
         console.log(error);
       }

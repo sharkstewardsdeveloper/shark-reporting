@@ -55,6 +55,7 @@ export interface FormSubmission {
   /** Whether the author has opted into receving updates about the app. */
   confirmed_get_app_updates: boolean;
   image_uuid: string | null;
+  form_submission_ID: string;
 }
 
 /** Shark species that can be specified in the reporting form. */
@@ -96,4 +97,5 @@ export const reportFormSchema: Yup.SchemaOf<UnsubmittedFormResponse> =
     should_subscribe: Yup.boolean(),
     confirmed_get_app_updates: Yup.boolean(),
     image_uuid: Yup.string(),
+    form_submission_ID: Yup.string(),
   });
