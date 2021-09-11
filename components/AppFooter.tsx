@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import {
   Box,
   Container,
+  Icon,
   Link,
   SimpleGrid,
   Stack,
@@ -10,6 +11,7 @@ import {
   chakra,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 
 // Based On: hauptrolle/chakra-templates
 // License: https://github.com/hauptrolle/chakra-templates/blob/main/LICENSE
@@ -103,15 +105,24 @@ export function AppFooter() {
             © 2021 <strong>Shark Stewards</strong>
           </Text>
           <Stack direction={"row"} spacing={6}>
-            {/* <SocialButton label={"Twitter"} href={"#"}>
-              <FaTwitter />
+            <SocialButton
+              label={"Facebook"}
+              href={"https://www.facebook.com/SharkStewards/"}
+            >
+              <Icon as={FaFacebook} />
             </SocialButton>
-            <SocialButton label={"YouTube"} href={"#"}>
-              <FaYoutube />
+            <SocialButton
+              label={"Instagram"}
+              href={"https://www.instagram.com/sharkstewards/"}
+            >
+              <Icon as={FaInstagram} />
             </SocialButton>
-            <SocialButton label={"Instagram"} href={"#"}>
-              <FaInstagram />
-            </SocialButton> */}
+            <SocialButton
+              label={"YouTube"}
+              href={"https://www.youtube.com/c/Sharksaver/"}
+            >
+              <Icon as={FaYoutube} />
+            </SocialButton>
           </Stack>
         </Container>
       </Box>
