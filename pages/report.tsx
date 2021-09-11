@@ -84,7 +84,7 @@ function useInitialFormValues(formUuid: string): UnsubmittedFormResponse {
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const [formUUID, setFormUUID] = useState(uuidv4());
+  const [formUUID] = useState(uuidv4());
   const defaultFormFormValues = useInitialFormValues(formUUID);
   const submitForm = useSubmitSharkSightingForm();
 
@@ -99,7 +99,7 @@ export default function Report() {
       // 5242880 = 5mb
       if (!fileList[i] || fileList[i].size > 5242880) return;
       try {
-        const { data, error } = await supabase.storage
+        await supabase.storage
           .from("user-report-images")
           .upload(
             `./${formUUID}/${fileList[i].name}` +

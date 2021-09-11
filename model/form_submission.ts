@@ -95,5 +95,5 @@ export const reportFormSchema: Yup.SchemaOf<UnsubmittedFormResponse> =
     author_name: Yup.string(),
     should_subscribe: Yup.boolean(),
     confirmed_get_app_updates: Yup.boolean(),
-    image_uuid: Yup.string(),
+    image_uuid: Yup.string().uuid(),
   });
