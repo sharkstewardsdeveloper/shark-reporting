@@ -16,7 +16,6 @@ export default async function postReport(
   req: NextApiRequest,
   res: NextApiResponse<PostReportResponse>
 ) {
-  console.log("HERE", req.body);
   const authToken = req.headers.authorization;
   let user_id: string | undefined;
   if (authToken != null) {

@@ -36,7 +36,6 @@ import {
   SharkType,
   UnsubmittedFormResponse,
   reportFormSchema,
-  UUID,
 } from "../model/form_submission";
 import { PostReportResponse } from "./api/postReport";
 import {
@@ -78,9 +77,7 @@ function useInitialFormValues(formUuid: string): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
-    // when i change this to null the form button does not allow for submitting
-    image_uuid: "",
-    form_submission_ID: formUuid,
+    image_uuid: formUuid,
   };
 }
 
@@ -90,7 +87,6 @@ export default function Report() {
   const [formUUID, setFormUUID] = useState(uuidv4());
   const defaultFormFormValues = useInitialFormValues(formUUID);
   const submitForm = useSubmitSharkSightingForm();
-  const [imageFileUuid, setImageFileUuid] = useState<string>();
 
   const splitFileReturnExtension = (fileName: string) => {
     return fileName.split(".").pop();
@@ -113,7 +109,6 @@ export default function Report() {
               upsert: false,
             }
           );
-        setImageFileUuid(formUUID);
       } catch (error: unknown) {
         console.log(error);
       }
@@ -136,7 +131,7 @@ export default function Report() {
           validationSchema={reportFormSchema}
           onSubmit={(values, actions) => {
             actions.setSubmitting(true);
-            submitForm(values, actions, imageFileUuid);
+            submitForm(values, actions);
           }}
         >
           {(props) => (
@@ -270,8 +265,7 @@ function useSubmitSharkSightingForm() {
 
   async function submitForm<FormValuesType>(
     values: FormValuesType,
-    actions: FormikHelpers<FormValuesType>,
-    imageUuid: string
+    actions: FormikHelpers<FormValuesType>
   ) {
     try {
       const data = await fetch("/api/postReport", {
@@ -280,7 +274,7 @@ function useSubmitSharkSightingForm() {
           "Content-Type": "application/json",
           ...(session == null ? {} : { Authorization: session.access_token }),
         },
-        body: JSON.stringify({ ...values, image_uuid: imageUuid }),
+        body: JSON.stringify(values),
       });
       const response: PostReportResponse = await data.json();
       // `=== true` narrows the type in the else-case
