@@ -140,7 +140,7 @@ export default function Report() {
         <title>Report a Shark Sighting · Shark Stewards</title>
       </Head>
       <VStack marginBottom="8">
-        <Alert status="info" colorScheme="gray">
+        <Alert status="info" colorScheme="gray" variant="left-accent">
           <AlertIcon />
           Fill out the information below to report what you have seen. This data
           is used for ocean conservation research purposes only.
