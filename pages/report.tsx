@@ -43,6 +43,8 @@ import {
   useIsGeolocationApiAvailable,
 } from "../utils/geolocationApi";
 import Head from "next/head";
+import { supabase } from "../utils/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -65,7 +67,9 @@ enum FormStep {
   AuthorInfo,
 }
 
-function useInitialFormValues(): UnsubmittedFormResponse {
+function useInitialFormValues(
+  storageFolder: UnsubmittedFormResponse["storage_folder"]
+): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
@@ -75,14 +79,93 @@ function useInitialFormValues(): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
+    storage_folder: storageFolder,
   };
 }
 
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const defaultFormFormValues = useInitialFormValues();
+  const [storageFolder, setStorageFolder] = useState(uuidv4());
+  const defaultFormFormValues = useInitialFormValues(storageFolder);
+  const [isPhotoLoading, setPhotoLoading] = useState(false);
   const submitForm = useSubmitSharkSightingForm();
+  const toast = useToast();
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) {
+      toast({
+        title: "Check to make sure the file(s) exist.",
+        description: "Cannot find file",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    if (fileList.length > 4) {
+      toast({
+        title: "You can only upload 4 images per report",
+        description: "Too many images",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    for (let i = 0; i < fileList.length; i++) {
+      console.log(fileList);
+      if (!fileList[i]) {
+        toast({
+          title: "Check to make sure the file(s) exist.",
+          description: "Cannot find file",
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setStorageFolder(null);
+        return;
+      }
+      // 5242880 = 5mb
+      if (fileList[i].size > 5242880) {
+        toast({
+          title: `${fileList[i].name} size too large`,
+          description: "5MB is the max size limit for images",
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setStorageFolder(null);
+        return;
+      }
+
+      try {
+        setPhotoLoading(true);
+        await supabase.storage
+          .from("user-report-images")
+          .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
+            upsert: false,
+          });
+      } catch (error: unknown) {
+        console.log(error);
+        toast({
+          title: `Something went wrong with your upload.`,
+          description: `${error}`,
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setPhotoLoading(false);
+        setStorageFolder(null);
+        return;
+      } finally {
+        setPhotoLoading(false);
+      }
+    }
+  };
 
   return (
     <Container>
@@ -125,6 +208,25 @@ export default function Report() {
                       hint="Check this box if you saw the shark out of the water after being removed by a human (even if it was later returned safely)."
                     />
                     <SharkWasReleasedCheckboxField name="was_released" />
+                  </Box>
+
+                  <Box>
+                    <FormControl mb={5}>
+                      <FormLabel>Do you have pictures of the sharks?</FormLabel>
+                      <Input
+                        multiple
+                        mb={2}
+                        pt={1}
+                        type="file"
+                        onChange={onFileChange}
+                        accept="image/*"
+                      />
+                      {isPhotoLoading && <p>Loading...</p>}
+                      <FormHelperText>
+                        Any images you can provide will improve our research 🔬
+                        We accept up to 4 images under 5MB each.
+                      </FormHelperText>
+                    </FormControl>
                   </Box>
 
                   <StringFormField
