@@ -67,7 +67,9 @@ enum FormStep {
   AuthorInfo,
 }
 
-function useInitialFormValues(storageFolder: string): UnsubmittedFormResponse {
+function useInitialFormValues(
+  storageFolder: UnsubmittedFormResponse["storage_folder"]
+): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
@@ -84,15 +86,36 @@ function useInitialFormValues(storageFolder: string): UnsubmittedFormResponse {
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const [storageFolder, setStorargeFolder] = useState(uuidv4());
+  const [storageFolder, setStorageFolder] = useState(uuidv4());
   const defaultFormFormValues = useInitialFormValues(storageFolder);
   const submitForm = useSubmitSharkSightingForm();
   const toast = useToast();
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
-    if (!fileList) return;
-    for (let i = 0; i < fileList.length; i++) {
+    if (!fileList) {
+      toast({
+        title: "Check to make sure the file(s) exist.",
+        description: "Cannot find file",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    if (fileList.length > 3) {
+      toast({
+        title: "You can only upload 4 images per report",
+        description: "Too many images",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    for (let i = 0; i < 3; i++) {
       if (!fileList[i]) {
         toast({
           title: "Check to make sure the file(s) exist.",
@@ -100,7 +123,8 @@ export default function Report() {
           status: "error",
           isClosable: true,
         });
-        setStorargeFolder(null);
+        e.target.value = null;
+        setStorageFolder(null);
         return;
       }
       // 5242880 = 5mb
@@ -111,7 +135,8 @@ export default function Report() {
           status: "error",
           isClosable: true,
         });
-        setStorargeFolder(null);
+        e.target.value = null;
+        setStorageFolder(null);
         return;
       }
 
@@ -129,6 +154,8 @@ export default function Report() {
           status: "error",
           isClosable: true,
         });
+        e.target.value = null;
+        setStorageFolder(null);
         return;
       }
     }
@@ -179,7 +206,7 @@ export default function Report() {
 
                   <Box>
                     <FormControl mb={5}>
-                      <FormLabel>We accept up to 4 images under 5MB</FormLabel>
+                      <FormLabel>Do you have pictures of the sharks?</FormLabel>
                       <Input
                         multiple
                         mb={2}
@@ -190,6 +217,7 @@ export default function Report() {
                       />
                       <FormHelperText>
                         Any images you can provide will improve our research 🔬
+                        We accept up to 4 images under 5MB each.
                       </FormHelperText>
                     </FormControl>
                   </Box>
