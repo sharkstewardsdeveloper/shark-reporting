@@ -607,6 +607,7 @@ function AutocompleteLocationField() {
   console.log(suggestions);
   return <ManualLocationField isSearchEnabled={isAutocompleteReady} />;
 }
+const locationNameFieldKey = "location_name";
 
 function ManualLocationField({
   isSearchEnabled,
@@ -614,22 +615,14 @@ function ManualLocationField({
   isSearchEnabled: boolean;
 }) {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
-  const locationNameFieldKey = "location_name";
-
   const isLocationApiAvailable = useIsGeolocationApiAvailable();
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
   const {
+    isUsingCurrentLocation,
     isFetchingCurrentLocation,
     locationFetchErrorType,
     handleSelectCurrentLocation,
-  } = useSelectCurrentLocation(locationNameFieldKey, setIsUsingCurrentLocation);
-
-  function handleClearCurrentLocation() {
-    setIsUsingCurrentLocation(false);
-    formContext.setFieldValue(locationNameFieldKey, "", true);
-    formContext.setFieldValue("location_lat", undefined, false);
-    formContext.setFieldValue("location_long", undefined, false);
-  }
+    handleClearCurrentLocation,
+  } = useSelectCurrentLocation(locationNameFieldKey);
 
   let hint: React.ReactNode;
   if (isUsingCurrentLocation) {
@@ -690,8 +683,7 @@ function ManualLocationField({
 }
 
 function useSelectCurrentLocation(
-  locationNameFieldKey: Extract<keyof UnsubmittedFormResponse, "location_name">,
-  setIsUsingCurrentLocation: (isUsingCurrentLocation: boolean) => void
+  locationNameFieldKey: Extract<keyof UnsubmittedFormResponse, "location_name">
 ) {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
   const toast = useToast();
@@ -701,6 +693,7 @@ function useSelectCurrentLocation(
   const [locationFetchErrorType, setLocationFetchErrorType] = useState<
     "permission_denied" | "unable_to_resolve"
   >();
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
   const handleSelectCurrentLocation = React.useCallback(async () => {
     setIsFetchingCurrentLocation(true);
@@ -749,9 +742,18 @@ function useSelectCurrentLocation(
     setIsUsingCurrentLocation,
   ]);
 
+  const handleClearCurrentLocation = () => {
+    setIsUsingCurrentLocation(false);
+    formContext.setFieldValue(locationNameFieldKey, "", true);
+    formContext.setFieldValue("location_lat", undefined, false);
+    formContext.setFieldValue("location_long", undefined, false);
+  };
+
   return {
+    isUsingCurrentLocation,
     isFetchingCurrentLocation,
     locationFetchErrorType,
     handleSelectCurrentLocation,
+    handleClearCurrentLocation,
   };
 }
