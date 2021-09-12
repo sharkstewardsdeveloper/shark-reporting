@@ -88,6 +88,7 @@ export default function Report() {
   const { session } = useSessionUser();
   const [storageFolder, setStorageFolder] = useState(uuidv4());
   const defaultFormFormValues = useInitialFormValues(storageFolder);
+  const [isPhotoLoading, setPhotoLoading] = useState(false);
   const submitForm = useSubmitSharkSightingForm();
   const toast = useToast();
 
@@ -142,6 +143,7 @@ export default function Report() {
       }
 
       try {
+        setPhotoLoading(true);
         await supabase.storage
           .from("user-report-images")
           .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
@@ -156,8 +158,11 @@ export default function Report() {
           isClosable: true,
         });
         e.target.value = null;
+        setPhotoLoading(false);
         setStorageFolder(null);
         return;
+      } finally {
+        setPhotoLoading(false);
       }
     }
   };
@@ -216,6 +221,7 @@ export default function Report() {
                         onChange={onFileChange}
                         accept="image/*"
                       />
+                      {isPhotoLoading && <p>Loading...</p>}
                       <FormHelperText>
                         Any images you can provide will improve our research 🔬
                         We accept up to 4 images under 5MB each.
