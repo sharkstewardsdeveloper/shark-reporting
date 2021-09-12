@@ -115,7 +115,8 @@ export default function Report() {
       setStorageFolder(null);
       return;
     }
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < fileList.length; i++) {
+      console.log(fileList);
       if (!fileList[i]) {
         toast({
           title: "Check to make sure the file(s) exist.",
