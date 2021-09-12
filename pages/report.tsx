@@ -67,7 +67,7 @@ enum FormStep {
   AuthorInfo,
 }
 
-function useInitialFormValues(formUuid: string): UnsubmittedFormResponse {
+function useInitialFormValues(storageFolder: string): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
@@ -77,40 +77,59 @@ function useInitialFormValues(formUuid: string): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
-    image_uuid: formUuid,
+    storage_folder: storageFolder,
   };
 }
 
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const [formUUID] = useState(uuidv4());
-  const defaultFormFormValues = useInitialFormValues(formUUID);
+  const [storageFolder, setStorargeFolder] = useState(uuidv4());
+  const defaultFormFormValues = useInitialFormValues(storageFolder);
   const submitForm = useSubmitSharkSightingForm();
-
-  const splitFileReturnExtension = (fileName: string) => {
-    return fileName.split(".").pop();
-  };
+  const toast = useToast();
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList) return;
     for (let i = 0; i < fileList.length; i++) {
+      if (!fileList[i]) {
+        toast({
+          title: "Check to make sure the file(s) exist.",
+          description: "Cannot find file",
+          status: "error",
+          isClosable: true,
+        });
+        setStorargeFolder(null);
+        return;
+      }
       // 5242880 = 5mb
-      if (!fileList[i] || fileList[i].size > 5242880) return;
+      if (fileList[i].size > 5242880) {
+        toast({
+          title: `${fileList[i].name} size too large`,
+          description: "5MB is the max size limit for images",
+          status: "error",
+          isClosable: true,
+        });
+        setStorargeFolder(null);
+        return;
+      }
+
       try {
         await supabase.storage
           .from("user-report-images")
-          .upload(
-            `./${formUUID}/${fileList[i].name}` +
-              splitFileReturnExtension(fileList[i].name),
-            fileList[i],
-            {
-              upsert: false,
-            }
-          );
+          .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
+            upsert: false,
+          });
       } catch (error: unknown) {
         console.log(error);
+        toast({
+          title: `Something went wrong with your upload.`,
+          description: `${error}`,
+          status: "error",
+          isClosable: true,
+        });
+        return;
       }
     }
   };
@@ -158,14 +177,22 @@ export default function Report() {
                     <SharkWasReleasedCheckboxField name="was_released" />
                   </Box>
 
-                  <Input
-                    multiple
-                    mb={2}
-                    pt={1}
-                    type="file"
-                    onChange={onFileChange}
-                    accept="image/*"
-                  />
+                  <Box>
+                    <FormControl mb={5}>
+                      <FormLabel>We accept up to 4 images under 5MB</FormLabel>
+                      <Input
+                        multiple
+                        mb={2}
+                        pt={1}
+                        type="file"
+                        onChange={onFileChange}
+                        accept="image/*"
+                      />
+                      <FormHelperText>
+                        Any images you can provide will improve our research 🔬
+                      </FormHelperText>
+                    </FormControl>
+                  </Box>
 
                   <StringFormField
                     fieldName="description"
