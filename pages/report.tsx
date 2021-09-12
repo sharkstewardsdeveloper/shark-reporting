@@ -104,7 +104,7 @@ export default function Report() {
       setStorageFolder(null);
       return;
     }
-    if (fileList.length > 3) {
+    if (fileList.length > 4) {
       toast({
         title: "You can only upload 4 images per report",
         description: "Too many images",
