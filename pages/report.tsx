@@ -84,7 +84,7 @@ function useInitialFormValues(storageFolder: string): UnsubmittedFormResponse {
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const [storageFolder, setStorargeFolder] = useState(uuidv4());
+  const [storageFolder, setStorageFolder] = useState(uuidv4());
   const defaultFormFormValues = useInitialFormValues(storageFolder);
   const submitForm = useSubmitSharkSightingForm();
   const toast = useToast();
