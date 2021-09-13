@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import {
   Alert,
   AlertIcon,
@@ -14,6 +14,9 @@ import {
   Heading,
   Input,
   InputGroup,
+  InputLeftElement,
+  InputProps,
+  InputRightElement,
   Spinner,
   Textarea,
   VStack,
@@ -41,16 +44,24 @@ import {
 import { PostReportResponse } from "./api/postReport";
 import {
   fetchCurrentLocation,
+  getPlaceLocation,
   useIsGeolocationApiAvailable,
+  useLocationAutocomplete,
 } from "../utils/geolocationApi";
 import Head from "next/head";
 import { supabase } from "../utils/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
-import usePlacesAutocomplete from "use-places-autocomplete";
 import {
   Status as GoogleMapsLoadStatus,
   Wrapper as GoogleMapsLoader,
 } from "@googlemaps/react-wrapper";
+import {
+  AutoComplete,
+  AutoCompleteInput,
+  AutoCompleteItem,
+  AutoCompleteList,
+} from "@choc-ui/chakra-autocomplete";
+import { SearchIcon } from "@chakra-ui/icons";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -428,7 +439,7 @@ function SightingDateField(props: FieldConfig) {
 interface StringFormFieldProps {
   fieldName: keyof UnsubmittedFormResponse;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
   inputType?: "short_answer" | "email" | "long_answer";
@@ -439,6 +450,10 @@ interface StringFormFieldProps {
 /**
  * A Formik field for string-type inputs that renders using Chakra's form components.
  * @see https://formik.org/docs/api/field#component
+ *
+ * You can specify an `inputType` in this component's props to create a default text input. Provide
+ * children instead if you'd like to render custom inputs (i.e. Autocompletes or other inputs with
+ * accessories).
  */
 function StringFormField({
   fieldName,
@@ -459,7 +474,7 @@ function StringFormField({
       <Field name={fieldName}>
         {({ field, form }: FieldProps<string, UnsubmittedFormResponse>) => (
           <>
-            <InputGroup>
+            {children == null ? (
               <TextInputComponent
                 {...field}
                 id={fieldName}
@@ -471,8 +486,9 @@ function StringFormField({
                     : undefined
                 }
               />
-              {children}
-            </InputGroup>
+            ) : (
+              <InputGroup>{children}</InputGroup>
+            )}
             {hint && <FormHelperText>{hint}</FormHelperText>}
             {form.errors[fieldName] != null && form.touched[fieldName] ? (
               <FormErrorMessage>{form.errors[fieldName]}</FormErrorMessage>
@@ -587,32 +603,89 @@ function LocationField() {
 function AutocompleteLocationField() {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
   const {
-    ready: isAutocompleteReady,
-    suggestions,
-    setValue,
-    clearSuggestions,
-  } = usePlacesAutocomplete({
-    // callbackName: "__googleMapsCallback",
-    // requestOptions: {
-    //   location: {
-    //     lat: 37.653534,
-    //     lng: -122.170185,
-    //   },
-    // },
-  });
-  useEffect(() => {
-    setValue(formContext.values.location_name ?? "");
-  }, [formContext.values.location_name, setValue]);
+    isLoading: isLoadingSuggestions,
+    search,
+    results,
+  } = useLocationAutocomplete();
+  const placesService = React.useMemo(
+    () => new google.maps.places.PlacesService(document.createElement("div")),
+    []
+  );
 
-  console.log(suggestions);
-  return <ManualLocationField isSearchEnabled={isAutocompleteReady} />;
+  function handleSelect(placeId: string) {
+    const selectedPrediction = results.find(
+      (result) => result.place_id === placeId
+    );
+    if (selectedPrediction != null) {
+      formContext.setFieldValue(
+        "location_name",
+        selectedPrediction.description
+      );
+      getPlaceLocation(placesService, placeId)
+        .then((location) => {
+          if (location != null) {
+            formContext.setFieldValue(
+              "location_lat",
+              String(location.lat()),
+              true
+            );
+            formContext.setFieldValue(
+              "location_long",
+              String(location.lng()),
+              true
+            );
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }
+
+  return (
+    <AutoComplete
+      openOnFocus
+      freeSolo
+      onChange={handleSelect}
+      filter={() => true}
+    >
+      <ManualLocationField
+        isSearchEnabled={true}
+        isLoading={isLoadingSuggestions}
+        onChange={(e) => {
+          const value = e.target.value;
+          const selectedPrediction = results.find(
+            (result) => result.place_id === value
+          );
+          if (selectedPrediction == null) {
+            formContext.setFieldValue("location_name", value);
+            search(value);
+          }
+        }}
+      />
+      <AutoCompleteList>
+        {results.map((suggestion) => (
+          <AutoCompleteItem
+            key={`place-${suggestion.place_id}`}
+            value={suggestion.place_id}
+          >
+            {suggestion.description}
+          </AutoCompleteItem>
+        ))}
+      </AutoCompleteList>
+    </AutoComplete>
+  );
 }
 const locationNameFieldKey = "location_name";
 
 function ManualLocationField({
   isSearchEnabled,
+  onChange,
+  isLoading,
 }: {
   isSearchEnabled: boolean;
+  onChange?: InputProps["onChange"];
+  isLoading?: boolean;
 }) {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
   const isLocationApiAvailable = useIsGeolocationApiAvailable();
@@ -652,10 +725,30 @@ function ManualLocationField({
       fieldName={locationNameFieldKey}
       isRequired
       label="Where did you see the shark(s)?"
-      placeholder={`Pier 39`}
-      isDisabled={isUsingCurrentLocation}
       hint={hint}
     >
+      {isSearchEnabled && (
+        <InputLeftElement>
+          <SearchIcon />
+        </InputLeftElement>
+      )}
+      <AutoCompleteInput
+        placeholder={`Pier 39`}
+        isDisabled={isUsingCurrentLocation}
+        onChange={
+          onChange ??
+          ((e) =>
+            formContext.setFieldValue(locationNameFieldKey, e.target.value))
+        }
+        wrapStyles={{ flexGrow: 1 }}
+        value={formContext.values.location_name}
+      />
+
+      {isLoading && (
+        <InputRightElement>
+          <Spinner />
+        </InputRightElement>
+      )}
       {isLocationApiAvailable &&
         (isUsingCurrentLocation ? (
           <Button
