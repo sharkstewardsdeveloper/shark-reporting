@@ -11,9 +11,13 @@ import {
   FormErrorMessage,
   FormHelperText,
   FormLabel,
-  HStack,
   Heading,
   Input,
+  InputGroup,
+  InputLeftElement,
+  InputProps,
+  InputRightElement,
+  Spinner,
   Textarea,
   VStack,
   useToast,
@@ -40,10 +44,25 @@ import {
 import { PostReportResponse } from "./api/postReport";
 import {
   fetchCurrentLocation,
+  getPlaceLocation,
   useIsGeolocationApiAvailable,
+  useLocationAutocomplete,
 } from "../utils/geolocationApi";
 import Head from "next/head";
 import { SharkPicker } from "../components/SharkPicker";
+import { supabase } from "../utils/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Status as GoogleMapsLoadStatus,
+  Wrapper as GoogleMapsLoader,
+} from "@googlemaps/react-wrapper";
+import {
+  AutoComplete,
+  AutoCompleteInput,
+  AutoCompleteItem,
+  AutoCompleteList,
+} from "@choc-ui/chakra-autocomplete";
+import { SearchIcon } from "@chakra-ui/icons";
 
 /** Which part of the form is currently being rendered. */
 enum FormStep {
@@ -66,7 +85,9 @@ enum FormStep {
   AuthorInfo,
 }
 
-function useInitialFormValues(): UnsubmittedFormResponse {
+function useInitialFormValues(
+  storageFolder: UnsubmittedFormResponse["storage_folder"]
+): UnsubmittedFormResponse {
   const email = useSessionUser().session?.user.email;
   return {
     sighting_time: DateTime.now().toISO(),
@@ -76,14 +97,93 @@ function useInitialFormValues(): UnsubmittedFormResponse {
     email,
     should_subscribe: false,
     confirmed_get_app_updates: false,
+    storage_folder: storageFolder,
   };
 }
 
 export default function Report() {
   const [currentStep, setCurrentStep] = useState(FormStep.SightingDetails);
   const { session } = useSessionUser();
-  const defaultFormFormValues = useInitialFormValues();
+  const [storageFolder, setStorageFolder] = useState(uuidv4());
+  const defaultFormFormValues = useInitialFormValues(storageFolder);
+  const [isPhotoLoading, setPhotoLoading] = useState(false);
   const submitForm = useSubmitSharkSightingForm();
+  const toast = useToast();
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) {
+      toast({
+        title: "Check to make sure the file(s) exist.",
+        description: "Cannot find file",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    if (fileList.length > 4) {
+      toast({
+        title: "You can only upload 4 images per report",
+        description: "Too many images",
+        status: "error",
+        isClosable: true,
+      });
+      e.target.value = null;
+      setStorageFolder(null);
+      return;
+    }
+    for (let i = 0; i < fileList.length; i++) {
+      console.log(fileList);
+      if (!fileList[i]) {
+        toast({
+          title: "Check to make sure the file(s) exist.",
+          description: "Cannot find file",
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setStorageFolder(null);
+        return;
+      }
+      // 5242880 = 5mb
+      if (fileList[i].size > 5242880) {
+        toast({
+          title: `${fileList[i].name} size too large`,
+          description: "5MB is the max size limit for images",
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setStorageFolder(null);
+        return;
+      }
+
+      try {
+        setPhotoLoading(true);
+        await supabase.storage
+          .from("user-report-images")
+          .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
+            upsert: false,
+          });
+      } catch (error: unknown) {
+        console.log(error);
+        toast({
+          title: `Something went wrong with your upload.`,
+          description: `${error}`,
+          status: "error",
+          isClosable: true,
+        });
+        e.target.value = null;
+        setPhotoLoading(false);
+        setStorageFolder(null);
+        return;
+      } finally {
+        setPhotoLoading(false);
+      }
+    }
+  };
 
   return (
     <Container>
@@ -133,6 +233,25 @@ export default function Report() {
                       hint="Check this box if you saw the shark out of the water after being removed by a human (even if it was later returned safely)."
                     />
                     <SharkWasReleasedCheckboxField name="was_released" />
+                  </Box>
+
+                  <Box>
+                    <FormControl mb={5}>
+                      <FormLabel>Do you have pictures of the sharks?</FormLabel>
+                      <Input
+                        multiple
+                        mb={2}
+                        pt={1}
+                        type="file"
+                        onChange={onFileChange}
+                        accept="image/*"
+                      />
+                      {isPhotoLoading && <p>Loading...</p>}
+                      <FormHelperText>
+                        Any images you can provide will improve our research 🔬
+                        We accept up to 4 images under 5MB each.
+                      </FormHelperText>
+                    </FormControl>
                   </Box>
 
                   <StringFormField
@@ -326,7 +445,7 @@ function SightingDateField(props: FieldConfig) {
 interface StringFormFieldProps {
   fieldName: keyof UnsubmittedFormResponse;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
   inputType?: "short_answer" | "email" | "long_answer";
@@ -337,6 +456,10 @@ interface StringFormFieldProps {
 /**
  * A Formik field for string-type inputs that renders using Chakra's form components.
  * @see https://formik.org/docs/api/field#component
+ *
+ * You can specify an `inputType` in this component's props to create a default text input. Provide
+ * children instead if you'd like to render custom inputs (i.e. Autocompletes or other inputs with
+ * accessories).
  */
 function StringFormField({
   fieldName,
@@ -357,7 +480,7 @@ function StringFormField({
       <Field name={fieldName}>
         {({ field, form }: FieldProps<string, UnsubmittedFormResponse>) => (
           <>
-            <HStack>
+            {children == null ? (
               <TextInputComponent
                 {...field}
                 id={fieldName}
@@ -369,8 +492,9 @@ function StringFormField({
                     : undefined
                 }
               />
-              {children}
-            </HStack>
+            ) : (
+              <InputGroup>{children}</InputGroup>
+            )}
             {hint && <FormHelperText>{hint}</FormHelperText>}
             {form.errors[fieldName] != null && form.touched[fieldName] ? (
               <FormErrorMessage>{form.errors[fieldName]}</FormErrorMessage>
@@ -461,20 +585,216 @@ function SharkWasReleasedCheckboxField(fieldProps: FieldConfig) {
 }
 
 function LocationField() {
+  const renderNonSuccessfulStatuses = (status: GoogleMapsLoadStatus) => {
+    if (status === GoogleMapsLoadStatus.LOADING) {
+      return <Spinner />;
+    } else if (status === GoogleMapsLoadStatus.FAILURE) {
+      return <ManualLocationField isSearchEnabled={false} />;
+    } else {
+      return null;
+    }
+  };
+
+  return (
+    <GoogleMapsLoader
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+      render={renderNonSuccessfulStatuses}
+      libraries={["places"]}
+    >
+      <AutocompleteLocationField />
+    </GoogleMapsLoader>
+  );
+}
+
+function AutocompleteLocationField() {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const {
+    isLoading: isLoadingSuggestions,
+    search,
+    results,
+  } = useLocationAutocomplete();
+  const placesService = React.useMemo(
+    () => new google.maps.places.PlacesService(document.createElement("div")),
+    []
+  );
+
+  function handleSelect(placeId: string) {
+    const selectedPrediction = results.find(
+      (result) => result.place_id === placeId
+    );
+    if (selectedPrediction != null) {
+      formContext.setFieldValue(
+        "location_name",
+        selectedPrediction.description
+      );
+      getPlaceLocation(placesService, placeId)
+        .then((location) => {
+          if (location != null) {
+            formContext.setFieldValue(
+              "location_lat",
+              String(location.lat()),
+              true
+            );
+            formContext.setFieldValue(
+              "location_long",
+              String(location.lng()),
+              true
+            );
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }
+
+  return (
+    <AutoComplete
+      openOnFocus
+      freeSolo
+      onChange={handleSelect}
+      filter={() => true}
+    >
+      <ManualLocationField
+        isSearchEnabled={true}
+        isLoading={isLoadingSuggestions}
+        onChange={(e) => {
+          const value = e.target.value;
+          const selectedPrediction = results.find(
+            (result) => result.place_id === value
+          );
+          if (selectedPrediction == null) {
+            formContext.setFieldValue("location_name", value);
+            search(value);
+          }
+        }}
+      />
+      <AutoCompleteList>
+        {results.map((suggestion) => (
+          <AutoCompleteItem
+            key={`place-${suggestion.place_id}`}
+            value={suggestion.place_id}
+          >
+            {suggestion.description}
+          </AutoCompleteItem>
+        ))}
+      </AutoCompleteList>
+    </AutoComplete>
+  );
+}
+const locationNameFieldKey = "location_name";
+
+function ManualLocationField({
+  isSearchEnabled,
+  onChange,
+  isLoading,
+}: {
+  isSearchEnabled: boolean;
+  onChange?: InputProps["onChange"];
+  isLoading?: boolean;
+}) {
+  const formContext = useFormikContext<UnsubmittedFormResponse>();
+  const isLocationApiAvailable = useIsGeolocationApiAvailable();
+  const {
+    isUsingCurrentLocation,
+    isFetchingCurrentLocation,
+    locationFetchErrorType,
+    handleSelectCurrentLocation,
+    handleClearCurrentLocation,
+  } = useSelectCurrentLocation(locationNameFieldKey);
+
+  let hint: React.ReactNode;
+  if (isUsingCurrentLocation) {
+    hint = null;
+  } else {
+    const prompt = isSearchEnabled
+      ? "Search for a location by typing above"
+      : "Enter the sighting location";
+    hint = (
+      <>
+        {prompt}
+        {isLocationApiAvailable &&
+          (locationFetchErrorType === "permission_denied" ? (
+            "."
+          ) : (
+            <>
+              {" "}
+              or choose <strong>My Location.</strong>
+            </>
+          ))}
+      </>
+    );
+  }
+
+  return (
+    <StringFormField
+      fieldName={locationNameFieldKey}
+      isRequired
+      label="Where did you see the shark(s)?"
+      hint={hint}
+    >
+      {isSearchEnabled && (
+        <InputLeftElement>
+          <SearchIcon />
+        </InputLeftElement>
+      )}
+      <AutoCompleteInput
+        placeholder={`Pier 39`}
+        isDisabled={isUsingCurrentLocation}
+        onChange={
+          onChange ??
+          ((e) =>
+            formContext.setFieldValue(locationNameFieldKey, e.target.value))
+        }
+        wrapStyles={{ flexGrow: 1 }}
+        value={formContext.values.location_name}
+      />
+
+      {isLoading && (
+        <InputRightElement>
+          <Spinner />
+        </InputRightElement>
+      )}
+      {isLocationApiAvailable &&
+        (isUsingCurrentLocation ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            onClick={handleClearCurrentLocation}
+          >
+            Clear
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            padding="5"
+            isLoading={isFetchingCurrentLocation}
+            isDisabled={locationFetchErrorType === "permission_denied"}
+            onClick={handleSelectCurrentLocation}
+          >
+            📍 My Location
+          </Button>
+        ))}
+    </StringFormField>
+  );
+}
+
+function useSelectCurrentLocation(
+  locationNameFieldKey: Extract<keyof UnsubmittedFormResponse, "location_name">
+) {
   const formContext = useFormikContext<UnsubmittedFormResponse>();
   const toast = useToast();
 
-  const isLocationApiAvailable = useIsGeolocationApiAvailable();
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
   const [isFetchingCurrentLocation, setIsFetchingCurrentLocation] =
     useState(false);
   const [locationFetchErrorType, setLocationFetchErrorType] = useState<
     "permission_denied" | "unable_to_resolve"
   >();
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
-  const locationNameFieldKey = "location_name";
-
-  async function handleSelectCurrentLocation() {
+  const handleSelectCurrentLocation = React.useCallback(async () => {
     setIsFetchingCurrentLocation(true);
 
     try {
@@ -512,61 +832,27 @@ function LocationField() {
     } finally {
       setIsFetchingCurrentLocation(false);
     }
-  }
+  }, [
+    locationNameFieldKey,
+    formContext,
+    toast,
+    setIsFetchingCurrentLocation,
+    setLocationFetchErrorType,
+    setIsUsingCurrentLocation,
+  ]);
 
-  function handleClearCurrentLocation() {
+  const handleClearCurrentLocation = () => {
     setIsUsingCurrentLocation(false);
     formContext.setFieldValue(locationNameFieldKey, "", true);
     formContext.setFieldValue("location_lat", undefined, false);
     formContext.setFieldValue("location_long", undefined, false);
-  }
+  };
 
-  return (
-    <StringFormField
-      fieldName={locationNameFieldKey}
-      isRequired
-      label="Where did you see the shark(s)?"
-      placeholder={`Pier 39`}
-      isDisabled={isUsingCurrentLocation}
-      hint={
-        isUsingCurrentLocation ? null : (
-          <>
-            Search for a location by typing above
-            {isLocationApiAvailable &&
-              (locationFetchErrorType === "permission_denied" ? (
-                "."
-              ) : (
-                <>
-                  {" "}
-                  or choose <strong>My Location.</strong>
-                </>
-              ))}
-          </>
-        )
-      }
-    >
-      {isLocationApiAvailable &&
-        (isUsingCurrentLocation ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            padding="5"
-            onClick={handleClearCurrentLocation}
-          >
-            Clear
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            padding="5"
-            isLoading={isFetchingCurrentLocation}
-            isDisabled={locationFetchErrorType === "permission_denied"}
-            onClick={handleSelectCurrentLocation}
-          >
-            📍 My Location
-          </Button>
-        ))}
-    </StringFormField>
-  );
+  return {
+    isUsingCurrentLocation,
+    isFetchingCurrentLocation,
+    locationFetchErrorType,
+    handleSelectCurrentLocation,
+    handleClearCurrentLocation,
+  };
 }

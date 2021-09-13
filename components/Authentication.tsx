@@ -28,7 +28,7 @@ export function Authentication({ children }: AuthenticationProps) {
       .then(() => {
         setSession(null);
       })
-      .catch((error) => {
+      .catch(() => {
         toast({
           status: "error",
           title: "Unable to sign out",
