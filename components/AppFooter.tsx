@@ -75,14 +75,21 @@ export function AppFooter() {
           </Stack>
 
           <Stack align={"flex-start"} as="section">
-            <ListHeader>Reporting App</ListHeader>
+            <ListHeader>Shark Watch CA</ListHeader>
             <Link
               href="https://github.com/sharkstewardsdeveloper/shark-reporting"
+              rel="noopener"
               isExternal
             >
               Contribute/View Source
             </Link>
-            <Link href={"#"}>Privacy Policy</Link>
+            <Link
+              href="https://github.com/sharkstewardsdeveloper/shark-reporting/issues"
+              rel="noopener"
+              isExternal
+            >
+              Report an Issue
+            </Link>
           </Stack>
         </SimpleGrid>
       </Container>
