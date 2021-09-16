@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, { PropsWithChildren, useCallback, useState } from "react";
 import {
   Alert,
   AlertIcon,
@@ -62,7 +62,7 @@ import {
   AutoCompleteList,
 } from "@choc-ui/chakra-autocomplete";
 import { SearchIcon } from "@chakra-ui/icons";
-
+import { useBeforeUnload } from "react-use";
 /** Which part of the form is currently being rendered. */
 enum FormStep {
   /**
@@ -108,6 +108,14 @@ export default function Report() {
   const [isPhotoLoading, setPhotoLoading] = useState(false);
   const submitForm = useSubmitSharkSightingForm();
   const toast = useToast();
+
+  const [isFormDirty, toggleDirtyForm] = useState(false);
+
+  const checkDirty = useCallback(() => {
+    return isFormDirty;
+  }, [isFormDirty]);
+
+  useBeforeUnload(checkDirty, "You have unsaved changes, are you sure?");
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
@@ -179,6 +187,7 @@ export default function Report() {
         setStorageFolder(null);
         return;
       } finally {
+        toggleDirtyForm(true);
         setPhotoLoading(false);
       }
     }
