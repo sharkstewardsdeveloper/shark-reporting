@@ -1,8 +1,12 @@
-.landingContainer {
+.landingFlex {
   position: relative;
 }
 
-.landingContainer::before {
+.landingContainer {
+  min-height: 300px;
+}
+
+.landingFlex::before {
   content: "";
   background-image: url("/shark_5.png");
   background-size: cover;
@@ -11,5 +15,5 @@
   right: 0px;
   bottom: 0px;
   left: 0px;
-  opacity: 0.1;
+  opacity: 0.4;
 }
