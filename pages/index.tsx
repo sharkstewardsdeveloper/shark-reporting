@@ -18,8 +18,9 @@ export default function Home() {
       flexDirection="column"
       width="100%"
       height="100%"
+      className="landingFlex"
     >
-      <Container textAlign="center">
+      <Container className="landingContainer" class textAlign="center">
         <VStack spacing={4}>
           <Heading m={[0, 0, 1]}>Help keep our oceans alive</Heading>
           <Text>
