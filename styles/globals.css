@@ -1,0 +1,15 @@
+.landingContainer {
+  position: relative;
+}
+
+.landingContainer::before {
+  content: "";
+  background-image: url("/shark_5.png");
+  background-size: cover;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  opacity: 0.1;
+}

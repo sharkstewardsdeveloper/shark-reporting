@@ -19,6 +19,7 @@ export default function Home() {
       flexDirection="column"
       width="100%"
       height="100%"
+      className="landingContainer"
     >
       <Spacer m={2} />
       <Container textAlign="center">
