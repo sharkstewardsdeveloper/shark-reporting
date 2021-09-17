@@ -5,21 +5,13 @@ import {
   Flex,
   HStack,
   Heading,
-  Image,
   Link,
   Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { isMobile } from "react-device-detect";
-import { useEffect } from "react";
 
 export default function Home() {
-  let pageLogoWidth;
-  useEffect(() => {
-    isMobile ? (pageLogoWidth = "40%") : (pageLogoWidth = "15%");
-  }, [isMobile]);
-
   return (
     <Flex
       align="center"
@@ -28,6 +20,7 @@ export default function Home() {
       width="100%"
       height="100%"
     >
+      <Spacer m={2} />
       <Container textAlign="center">
         <VStack spacing={4}>
           <Heading m={[0, 0, 1]}>Help keep our oceans alive</Heading>
@@ -46,15 +39,7 @@ export default function Home() {
           </HStack>
         </VStack>
       </Container>
-      <Spacer m={4} />
-      <Image
-        m={5}
-        width={pageLogoWidth}
-        className="pageLogo"
-        src="/ssLogo.png"
-        alt="shark stewards"
-      />
-      <Spacer m={1} />
+      <Spacer m={2} />
     </Flex>
   );
 }
