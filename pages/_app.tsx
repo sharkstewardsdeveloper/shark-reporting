@@ -10,7 +10,9 @@ import {
   ChakraProvider,
   Flex,
   Grid,
+  HStack,
   Heading,
+  IconButton,
   Image,
   Link,
   Menu,
@@ -18,6 +20,7 @@ import {
   MenuGroup,
   MenuItem,
   MenuList,
+  useColorMode,
   useDisclosure,
 } from "@chakra-ui/react";
 import "../styles/globals.css";
@@ -27,7 +30,7 @@ import { useSessionUser } from "../session/useSessionUser";
 import { AuthModal } from "../components/Auth";
 import { SignUpModal } from "../components/SignUpModal";
 import React from "react";
-import { ExternalLinkIcon } from "@chakra-ui/icons";
+import { ExternalLinkIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 export default function MyApp({ Component, pageProps }) {
   return (
@@ -92,29 +95,45 @@ function AppHeader() {
           </Flex>
         </Link>
 
-        <Menu>
-          <MenuButton variant="solid" m={3} as={Button} isActive={false}>
-            {session == null ? "Menu" : session.user.email}
-          </MenuButton>
-          <MenuList>
-            {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
-            {session == null && (
-              <MenuItem onClick={onOpenSignUp}>Sign Up</MenuItem>
-            )}
-            {session != null && (
-              <>
-                <MenuItem>My Sightings</MenuItem>
-                <MenuGroup>
-                  <MenuItem>Profile</MenuItem>
-                  <MenuItem onClick={logout}>Sign Out</MenuItem>
-                </MenuGroup>
-              </>
-            )}
-          </MenuList>
-        </Menu>
+        <HStack spacing={2}>
+          <ThemeToggleButton />
+          <Menu>
+            <MenuButton variant="solid" m={3} as={Button}>
+              {session == null ? "Menu" : session.user.email}
+            </MenuButton>
+            <MenuList>
+              {session == null && <MenuItem onClick={onOpen}>Login</MenuItem>}
+              {session == null && (
+                <MenuItem onClick={onOpenSignUp}>Sign Up</MenuItem>
+              )}
+              {session != null && (
+                <>
+                  <MenuItem>My Sightings</MenuItem>
+                  <MenuGroup>
+                    <MenuItem>Profile</MenuItem>
+                    <MenuItem onClick={logout}>Sign Out</MenuItem>
+                  </MenuGroup>
+                </>
+              )}
+            </MenuList>
+          </Menu>
+        </HStack>
       </Flex>
       {isAuthModalOpen && <AuthModal onClose={onClose} />}
       {isSignUpModalOpen && <SignUpModal onCloseSignUp={onCloseSignUp} />}
     </>
+  );
+}
+
+function ThemeToggleButton() {
+  const { colorMode, toggleColorMode } = useColorMode();
+  const Icon = colorMode === "light" ? MoonIcon : SunIcon;
+  return (
+    <IconButton
+      aria-label="Toggle Theme"
+      variant="ghost"
+      onClick={toggleColorMode}
+      icon={<Icon />}
+    />
   );
 }
