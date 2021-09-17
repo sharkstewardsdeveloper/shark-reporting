@@ -113,6 +113,7 @@ export default function Report() {
   const [isPhotoLoading, setPhotoLoading] = useState(false);
   const submitForm = useSubmitSharkSightingForm();
   const toast = useToast();
+  const [uploadedPhotoKeys, setUpLoadedPhotoKeys] = useState([]);
 
   const [isFormDirty, toggleDirtyForm] = useState(false);
   const checkDirty = useCallback(() => {
@@ -122,10 +123,21 @@ export default function Report() {
   useBeforeUnload(checkDirty, "You have unsaved changes, are you sure?");
 
   useEffect(() => {
-    if (checkDirty) {
-      supabase.storage
+    console.log(uploadedPhotoKeys);
+  }, [uploadedPhotoKeys]);
+
+  const deleteUploadedPhotos = useCallback(async () => {
+    for (let i = 0; i < uploadedPhotoKeys.length; i++) {
+      const { data, error } = await supabase.storage
         .from("user-report-images")
-        .remove(["53c0e4cd-58f8-452b-b57f-01d7ce6d8fb6/sharkstewards.png"]);
+        .remove(uploadedPhotoKeys[i]);
+      console.log(data, error);
+    }
+  }, [uploadedPhotoKeys]);
+
+  useEffect(() => {
+    if (checkDirty) {
+      deleteUploadedPhotos();
     }
   }, []);
 
@@ -181,11 +193,16 @@ export default function Report() {
 
       try {
         setPhotoLoading(true);
-        await supabase.storage
+        const { data, error } = await supabase.storage
           .from("user-report-images")
           .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
             upsert: false,
           });
+        if (data) {
+          console.log(data);
+          let photoKey = data.Key.replace("user-report-images/", "");
+          setUpLoadedPhotoKeys([...uploadedPhotoKeys, photoKey]);
+        }
       } catch (error: unknown) {
         console.log(error);
         toast({
@@ -201,6 +218,11 @@ export default function Report() {
       } finally {
         toggleDirtyForm(true);
         setPhotoLoading(false);
+        // testing trying to delete uploaded photos without user navigating off page
+        const { data, error } = await supabase.storage
+          .from("user-report-images")
+          .remove(uploadedPhotoKeys[i]);
+        console.log(data, error);
       }
     }
   };
