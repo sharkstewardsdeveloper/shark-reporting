@@ -1,4 +1,9 @@
-import React, { PropsWithChildren, useCallback, useState } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import {
   Alert,
   AlertIcon,
@@ -110,12 +115,19 @@ export default function Report() {
   const toast = useToast();
 
   const [isFormDirty, toggleDirtyForm] = useState(false);
-
   const checkDirty = useCallback(() => {
     return isFormDirty;
   }, [isFormDirty]);
 
   useBeforeUnload(checkDirty, "You have unsaved changes, are you sure?");
+
+  useEffect(() => {
+    if (checkDirty) {
+      supabase.storage
+        .from("user-report-images")
+        .remove(["53c0e4cd-58f8-452b-b57f-01d7ce6d8fb6/sharkstewards.png"]);
+    }
+  }, []);
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
