@@ -5,6 +5,7 @@
 .landingContainer {
   min-height: 300px;
   padding: 5%;
+  position: relative;
 }
 
 .landingFlex::before {
@@ -16,5 +17,5 @@
   right: 0px;
   bottom: 0px;
   left: 0px;
-  opacity: 0.2;
+  opacity: 0.4;
 }
