@@ -21,12 +21,15 @@ export default function Quiz({}) {
     if (questionIndex < questions.length - 1) {
       setQuestionIndex(questionIndex + 1);
     } else {
-      toast({
-        title: "Well done!",
-        description: "The shark quiz is complete.",
-        status: "success",
-        isClosable: true,
-      });
+      if (!toast.isActive("complete")) {
+        toast({
+          id: "complete",
+          title: "Well done!",
+          description: "The shark quiz is complete.",
+          status: "success",
+          isClosable: true,
+        });
+      }
     }
   };
 
@@ -34,12 +37,15 @@ export default function Quiz({}) {
     if (questionIndex > 0) {
       setQuestionIndex(questionIndex - 1);
     } else {
-      toast({
-        title: "This is the first question",
-        description: "Click the right arrow to proceed",
-        status: "warning",
-        isClosable: true,
-      });
+      if (!toast.isActive("firstQuestion")) {
+        toast({
+          id: "firstQuestion",
+          title: "This is the first question",
+          description: "Click the right arrow to proceed",
+          status: "warning",
+          isClosable: true,
+        });
+      }
     }
   };
 

@@ -1,16 +1,14 @@
 import React from "react";
 import {
   Button,
-  Container,
   Flex,
-  Heading,
   HStack,
+  Heading,
   Link,
   Spacer,
-  Stack,
   Text,
-  useColorModeValue,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 // import Quiz from "../components/Quiz";
 
@@ -32,7 +30,7 @@ export default function Education() {
         bgGradient="linear(to-t, blackAlpha.600, transparent)"
         padding="15%"
       >
-        <Heading mr={6} fontSize={["3xl", "4xl", "5xl"]}>
+        <Heading ml={6} mr={6} fontSize={["3xl", "4xl", "5xl"]}>
           <Text as="span" position="relative" color="white">
             Learn about
           </Text>
@@ -41,7 +39,7 @@ export default function Education() {
             Sharks
           </Text>{" "}
         </Heading>
-        <VStack>
+        <VStack mr={5}>
           <Link href="/quiz">
             <Button>Practice your knowledge</Button>
           </Link>
