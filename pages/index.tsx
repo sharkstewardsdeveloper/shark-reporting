@@ -5,6 +5,7 @@ import {
   Flex,
   Heading,
   Link,
+  Spacer,
   Stack,
   Text,
   useColorModeValue,
@@ -35,7 +36,7 @@ export default function Home() {
               <Text as="span" position="relative" color="white">
                 Keep our
               </Text>
-              <br />{" "}
+              <Spacer as="br" display={["none", "none", "inline"]} />{" "}
               <Text color="teal.300" as="span">
                 oceans alive
               </Text>{" "}
