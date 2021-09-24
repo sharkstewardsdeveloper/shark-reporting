@@ -27,7 +27,7 @@ export default function MyApp({ Component, pageProps }) {
         </Head>
         <Grid templateRows="min-content min-content 1fr auto" height="100vh">
           <AppHeader />
-          <Alert status="warning" justifyContent="center" marginBottom="4">
+          <Alert status="warning" justifyContent="center">
             <AlertIcon />
             <Flex direction={["column", "column", "row"]}>
               <AlertTitle>
