@@ -10,7 +10,7 @@
 
 .landingFlex::before {
   content: "";
-  background-image: url("/shark_5.png");
+  background-image: url("/hero.webp");
   background-size: cover;
   position: absolute;
   top: 0px;
