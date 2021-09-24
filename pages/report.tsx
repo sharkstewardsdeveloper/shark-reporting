@@ -135,11 +135,11 @@ export default function Report() {
     }
   }, [uploadedPhotoKeys]);
 
-  useEffect(() => {
-    if (checkDirty) {
-      deleteUploadedPhotos();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (checkDirty) {
+  //     deleteUploadedPhotos();
+  //   }
+  // }, []);
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
@@ -195,13 +195,15 @@ export default function Report() {
         setPhotoLoading(true);
         const { data, error } = await supabase.storage
           .from("user-report-images")
-          .upload(`./${storageFolder}/${fileList[i].name}`, fileList[i], {
+          .upload(`${storageFolder}/${fileList[i].name}`, fileList[i], {
             upsert: false,
           });
         if (data) {
           console.log(data);
-          let photoKey = data.Key.replace("user-report-images/", "");
-          setUpLoadedPhotoKeys([...uploadedPhotoKeys, photoKey]);
+          let photoKey = data.Key;
+          photoKey = photoKey.replace("user-report-images/", "");
+          const newKeys = [...uploadedPhotoKeys, photoKey];
+          setUpLoadedPhotoKeys(newKeys);
         }
       } catch (error: unknown) {
         console.log(error);
@@ -221,8 +223,12 @@ export default function Report() {
         // testing trying to delete uploaded photos without user navigating off page
         const { data, error } = await supabase.storage
           .from("user-report-images")
-          .remove(uploadedPhotoKeys[i]);
-        console.log(data, error);
+          .remove([uploadedPhotoKeys[i]]);
+        if (error) {
+          console.log(error);
+          return;
+        }
+        console.log(data);
       }
     }
   };
