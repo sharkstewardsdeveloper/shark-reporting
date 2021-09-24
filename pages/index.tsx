@@ -3,11 +3,11 @@ import {
   Button,
   Container,
   Flex,
-  HStack,
   Heading,
   Link,
+  Stack,
   Text,
-  VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
 export default function Home() {
@@ -18,26 +18,53 @@ export default function Home() {
       flexDirection="column"
       width="100%"
       height="100%"
-      className="landingFlex"
+      backgroundImage="url(/hero.webp)"
+      backgroundSize="cover"
+      backgroundPosition="center center"
     >
-      <Container className="landingContainer" class textAlign="center">
-        <VStack spacing={4}>
-          <Heading m={[0, 0, 1]}>Help keep our oceans alive</Heading>
-          <Text>
-            Sharks play a critical role in marine ecosystems. Help protect them
-            by reporting shark catches and other interactions with humans. 🦈
-          </Text>
-
-          <HStack spacing={4} marginTop={3}>
-            <Link href="/report">
-              <Button variant="solid">Report Sighting</Button>
-            </Link>
-            <Link href="/education">
-              <Button variant="outline">Learn More</Button>
-            </Link>
-          </HStack>
-        </VStack>
-      </Container>
+      <Flex
+        width="full"
+        height="full"
+        alignItems="center"
+        justify="center"
+        bgGradient="linear(to-t, blackAlpha.600, transparent)"
+      >
+        <Container>
+          <Stack spacing={[4, 6]} width="full" maxW="lg" paddingY={[4, 4, 0]}>
+            <Heading fontSize={["3xl", "4xl", "5xl"]}>
+              <Text as="span" position="relative" color="white">
+                Keep our
+              </Text>
+              <br />{" "}
+              <Text color="teal.300" as="span">
+                oceans alive
+              </Text>{" "}
+            </Heading>
+            <Text fontSize={{ base: "md", lg: "lg" }} color={"gray.300"}>
+              Sharks play a critical role in marine ecosystems. Protect them by
+              reporting shark catches and other interactions with humans.
+            </Text>
+            <Stack
+              direction={["column", "row"]}
+              spacing="4"
+              justifyContent="center"
+              width="full"
+            >
+              <Link href="/report">
+                <Button variant="solid">Report Sighting</Button>
+              </Link>
+              <Link href="/education">
+                <Button
+                  variant="outline"
+                  color={useColorModeValue("teal.400", "teal.300")}
+                >
+                  Learn More
+                </Button>
+              </Link>
+            </Stack>
+          </Stack>
+        </Container>
+      </Flex>
     </Flex>
   );
 }
