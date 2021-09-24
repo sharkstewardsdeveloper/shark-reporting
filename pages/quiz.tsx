@@ -86,7 +86,7 @@ export default function Quiz({}) {
       fact: "It is estimated that 73,000,000 – 100,000,000 sharks are killed for their fins, each year.",
     },
     {
-      imageUrl: "/shark_4.png",
+      imageUrl: "/shark_1.png",
       imageAlt: "shark stewards",
       question:
         "Which shark species has had the most reported attacks off the California coast?",

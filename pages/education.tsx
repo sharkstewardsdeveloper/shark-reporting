@@ -18,7 +18,7 @@ export default function Education() {
       flexDirection="row"
       width="100%"
       height="100%"
-      backgroundImage="url(/shark_1.png)"
+      backgroundImage="url(/shark_4.png)"
       backgroundSize="cover"
       backgroundPosition="center center"
     >
