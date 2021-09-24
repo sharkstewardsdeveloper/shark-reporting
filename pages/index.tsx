@@ -42,7 +42,10 @@ export default function Home() {
               </Text>{" "}
             </Heading>
             <Text fontSize={{ base: "md", lg: "lg" }} color={"gray.300"}>
-              Sharks play a critical role in marine ecosystems. Protect them by
+              <Text as="strong" fontWeight="semibold" color="white">
+                Sharks
+              </Text>{" "}
+              play a critical role in marine ecosystems. Protect them by
               reporting shark catches and other interactions with humans.
             </Text>
             <Stack
