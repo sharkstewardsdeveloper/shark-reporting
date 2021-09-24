@@ -31,12 +31,18 @@ export function AppHeader() {
 
   return (
     <>
-      <Flex as="header" align="center" justify="space-between" wrap="wrap">
+      <Flex
+        as="header"
+        align="center"
+        justify="space-between"
+        wrap="wrap"
+        paddingX="4"
+        paddingY="2"
+      >
         <Link title="Home" href="/">
           <Flex align="center" justify="flex-start">
             <Image
-              m={1}
-              boxSize={["42px", "64px", "88px"]}
+              boxSize={["42px", "64px"]}
               objectFit="cover"
               src="/ssLogo.png"
               alt="Shark Stewards"
