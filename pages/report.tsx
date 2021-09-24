@@ -185,7 +185,7 @@ export default function Report() {
   };
 
   return (
-    <Container>
+    <Container paddingTop="4">
       <Head>
         <title>Report a Shark Sighting · Shark Stewards</title>
       </Head>
