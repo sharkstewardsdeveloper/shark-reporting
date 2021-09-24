@@ -5,6 +5,7 @@ import {
   Flex,
   Heading,
   Link,
+  Spacer,
   Stack,
   Text,
   useColorModeValue,
@@ -35,13 +36,16 @@ export default function Home() {
               <Text as="span" position="relative" color="white">
                 Keep our
               </Text>
-              <br />{" "}
+              <Spacer as="br" display={["none", "none", "inline"]} />{" "}
               <Text color="teal.300" as="span">
                 oceans alive
               </Text>{" "}
             </Heading>
             <Text fontSize={{ base: "md", lg: "lg" }} color={"gray.300"}>
-              Sharks play a critical role in marine ecosystems. Protect them by
+              <Text as="strong" fontWeight="semibold" color="white">
+                Sharks
+              </Text>{" "}
+              play a critical role in marine ecosystems. Protect them by
               reporting shark catches and other interactions with humans.
             </Text>
             <Stack
