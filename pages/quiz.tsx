@@ -35,6 +35,7 @@ export default function Quiz({}) {
 
   const previousQuestion = () => {
     if (questionIndex > 0) {
+      setIsCorrect(null);
       setQuestionIndex(questionIndex - 1);
     } else {
       if (!toast.isActive("firstQuestion")) {
@@ -59,7 +60,7 @@ export default function Quiz({}) {
 
   let questions = [
     {
-      imageUrl: "/shark_6.jpg",
+      imageUrl: "/shark_1.png",
       imageAlt: "shark stewards",
       question:
         "What percentage of oceanic sharks and rays are threatened with extinction??",
@@ -86,7 +87,7 @@ export default function Quiz({}) {
       fact: "It is estimated that 73,000,000 – 100,000,000 sharks are killed for their fins, each year.",
     },
     {
-      imageUrl: "/shark_1.png",
+      imageUrl: "/shark_6.jpg",
       imageAlt: "shark stewards",
       question:
         "Which shark species has had the most reported attacks off the California coast?",
